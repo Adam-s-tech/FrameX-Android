@@ -1,6 +1,5 @@
 package com.framex.app.ui.components
 
-import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
@@ -162,7 +161,6 @@ fun OverlayPreviewContent(
 
     Box(
         modifier = modifier
-            .animateContentSize()
             .clip(RoundedCornerShape(8.dp))
             .background(effectiveBg)
             .border(effectiveBorderWidth, effectiveBorderColor, RoundedCornerShape(8.dp))

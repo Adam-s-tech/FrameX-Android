@@ -163,10 +163,23 @@ class CpuMonitor @Inject constructor(
         }
     }
 
-    // Exact same approach as PerfStats: read cpu0 current clock frequency from sysfs.
+    // Probed once at startup (0..15 covers any 4, 6, 8, 10, or 16-core SoC layout)
+    private val discoveredCoreFreqFiles: List<java.io.File> = (0..15).mapNotNull { i ->
+        val file = java.io.File("/sys/devices/system/cpu/cpu$i/cpufreq/scaling_cur_freq")
+        if (file.exists() && file.canRead()) file else null
+    }
+
+    // Dynamic peak CPU frequency across all discovered active cores (zero runtime GC allocation)
     val cpuUsage: Flow<Int> = flow {
         while (true) {
-            emit(readFreq(0))
+            var peakMhz = 0
+            for (i in 0 until discoveredCoreFreqFiles.size) {
+                val curMhz = readMhz(discoveredCoreFreqFiles[i])
+                if (curMhz > peakMhz) {
+                    peakMhz = curMhz
+                }
+            }
+            emit(if (peakMhz > 0) peakMhz else readFreq(0))
             delay(1000)
         }
     }
