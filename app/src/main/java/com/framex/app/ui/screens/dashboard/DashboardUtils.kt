@@ -12,8 +12,8 @@ object DashboardUtils {
         val current = history.last()
         val avg = history.average().toInt()
         val sorted = history.sorted()
-        val count1Percent = (history.size * 0.1).toInt().coerceAtLeast(1)
-        val low1 = sorted.take(count1Percent).firstOrNull() ?: 0
+        val count1Percent = (history.size * 0.01).toInt().coerceAtLeast(1)
+        val low1 = sorted.take(count1Percent).average().toInt()
         val frametime = if (current > 0) (1000f / current).toInt() else 0
 
         return FpsStatsSummary(

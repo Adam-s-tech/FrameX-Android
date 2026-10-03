@@ -64,10 +64,24 @@
     <string name="dashboard_performance_title">Performance</string>
     <string name="dashboard_performance_desc">Game mode</string>
     <string name="dashboard_shizuku_title">Shizuku</string>
+    <string name="dashboard_adb">ADB</string>
     <string name="dashboard_connected">Connected</string>
     <string name="dashboard_disconnected">Disconnected</string>
     <string name="dashboard_thermal_title">Thermal diagnostics</string>
-    <string name="dashboard_thermal_desc">Find what\'s causing frame drops</string>
+    <string name="dashboard_thermal_desc">Track throttling</string>
+    <string name="dashboard_hero_desc_ready">Start the overlay to see real-time FPS, CPU, GPU, RAM and more in your games.</string>
+    <string name="dashboard_hero_desc_active">Overlay is currently active and gathering telemetry metrics.</string>
+    <string name="dashboard_live_metrics">LIVE METRICS</string>
+    <string name="dashboard_realtime">Real-time</string>
+    <string name="dashboard_customize">Customize</string>
+    <string name="dashboard_tools">TOOLS</string>
+    <string name="dashboard_session_logs_title">Session logs</string>
+    <string name="dashboard_session_logs_desc">View and export gameplay logs</string>
+    <string name="dashboard_recent_sessions">RECENT SESSIONS</string>
+    <string name="dashboard_view_all">View all</string>
+    <string name="dashboard_no_recent_sessions">No Recent Sessions</string>
+    <string name="dashboard_no_recent_sessions_desc">Recorded gameplay sessions and performance metrics will appear here</string>
+    <string name="coming_soon">Coming soon</string>
 
     <!-- Overlay Preview -->
     <string name="overlay_no_modules">No modules</string>

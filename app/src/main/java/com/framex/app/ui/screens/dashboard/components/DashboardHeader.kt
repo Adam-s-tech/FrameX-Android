@@ -9,7 +9,6 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Icon
@@ -29,6 +28,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.framex.app.R
+import com.framex.app.ui.theme.FrameXShapes
 
 @Composable
 fun DashboardHeader(
@@ -56,7 +56,7 @@ fun DashboardHeader(
                 contentDescription = stringResource(R.string.cd_app_logo),
                 modifier = Modifier
                     .size(42.dp)
-                    .clip(RoundedCornerShape(12.dp))
+                    .clip(FrameXShapes.Medium)
             )
             Spacer(modifier = Modifier.width(12.dp))
             Text(

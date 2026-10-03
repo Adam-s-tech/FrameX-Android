@@ -28,6 +28,7 @@ fun DashboardRoute(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val lifecycleOwner = LocalLifecycleOwner.current
 
+    // Documented reason: Synchronizes permissions and Shizuku status when returning from System Settings.
     DisposableEffect(lifecycleOwner) {
         val observer = LifecycleEventObserver { _, event ->
             if (event == Lifecycle.Event.ON_RESUME) {

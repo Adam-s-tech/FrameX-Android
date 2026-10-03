@@ -47,6 +47,7 @@ class DashboardViewModel @Inject constructor(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5000),
         initialValue = DashboardUiState(
+            isOverlayRunning = OverlayService.isRunning.value,
             hasOverlayPermission = overlayServiceController.hasOverlayPermission(),
             isShizukuAvailable = shizukuManager.isShizukuAvailable.value,
             hasShizukuPermission = shizukuManager.hasPermission.value
