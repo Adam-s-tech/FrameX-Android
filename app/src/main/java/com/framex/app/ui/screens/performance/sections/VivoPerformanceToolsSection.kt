@@ -4,13 +4,38 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Bolt
-import androidx.compose.material.icons.filled.Speed
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material.icons.filled.Layers
+import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -19,16 +44,12 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.framex.app.ui.theme.FrameXBorders
+import com.framex.app.ui.theme.FrameXShapes
+import com.framex.app.ui.theme.FrameXSpacing
 
 /**
- * Vivo & iQOO Hardware Performance Suite.
- *
- * Operates on the entire set of games added in the Game Launcher section:
- * - Perf List card: Add all / Remove all from Vivo's internal perf_game_list.
- * - AOT card: Compile all launcher games to speed filter.
- * - Live perf_game_list display card.
- *
- * No per-game tab system. No hardcoded app names.
+ * Performance Tools section with streamlined action buttons and live perf_game_list inspection.
  */
 @Composable
 fun VivoPerformanceToolsSection(
@@ -45,314 +66,219 @@ fun VivoPerformanceToolsSection(
         onRefreshPerfList()
     }
 
+    val addedCount = remember(launcherGames, perfGameList) {
+        launcherGames.count { it in perfGameList }
+    }
+    val allAdded = launcherGames.isNotEmpty() && addedCount == launcherGames.size
+
+    var isAddingOrRemoving by remember { mutableStateOf(false) }
+    var isCompiling by remember { mutableStateOf(false) }
+    var compileStatusText by remember { mutableStateOf<String?>(null) }
+
     Column(
         modifier = modifier
             .fillMaxWidth()
-            .padding(horizontal = 24.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
+            .padding(horizontal = FrameXSpacing.XLarge),
+        verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        PerfListCard(
-            launcherGames = launcherGames,
-            perfGameList = perfGameList,
-            onAddAll = { onComplete -> onAddAllToPerfList(launcherGames, onComplete) },
-            onRemoveAll = { onComplete -> onRemoveAllFromPerfList(launcherGames, onComplete) }
-        )
-
-        AotCompileCard(
-            onCompileAll = { onComplete -> onCompileAll(launcherGames, onComplete) }
-        )
-
-        LivePerfGameListCard(rawList = rawPerfGameList)
-    }
-}
-
-@Composable
-private fun PerfListCard(
-    launcherGames: Set<String>,
-    perfGameList: List<String>,
-    onAddAll: ((Boolean) -> Unit) -> Unit,
-    onRemoveAll: ((Boolean) -> Unit) -> Unit
-) {
-    var isAdding by remember { mutableStateOf(false) }
-    var isRemoving by remember { mutableStateOf(false) }
-
-    // All launcher games present in perf list → show Remove, otherwise show Add
-    val allAdded = remember(launcherGames, perfGameList) {
-        launcherGames.isNotEmpty() && launcherGames.all { it in perfGameList }
-    }
-
-    Card(
-        shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-        border = BorderStroke(1.dp, Color.White.copy(alpha = 0.08f)),
-        modifier = Modifier.fillMaxWidth()
-    ) {
-        Column(modifier = Modifier.padding(20.dp)) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Icon(
-                    Icons.Default.Bolt,
-                    contentDescription = null,
-                    tint = Color(0xFF818CF8),
-                    modifier = Modifier.size(20.dp)
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-                Text(
-                    text = "Perf List",
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.White
-                )
-            }
-
-            Spacer(modifier = Modifier.height(10.dp))
-
+        // Section Header
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 4.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
             Text(
-                text = "Adds all games in Game Launcher to Vivo's internal perf_game_list. This grants sustained Cortex-X CPU priority, relaxed thermal throttling, and priority GPU scheduling for the duration of each session.",
-                style = MaterialTheme.typography.bodySmall,
-                color = Color(0xFFB0B3C1),
-                lineHeight = 19.sp
+                text = "Performance Tools",
+                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+                color = Color.White
             )
 
-            Spacer(modifier = Modifier.height(20.dp))
-
-            if (allAdded) {
-                // Remove from Perf List — full width
-                Button(
-                    onClick = {
-                        if (!isRemoving) {
-                            isRemoving = true
-                            onRemoveAll { isRemoving = false }
-                        }
-                    },
-                    enabled = !isRemoving,
-                    shape = RoundedCornerShape(12.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = Color(0xFF3F1315),
-                        contentColor = Color(0xFFFF5252),
-                        disabledContainerColor = Color(0xFF3F1315).copy(alpha = 0.5f),
-                        disabledContentColor = Color(0xFFFF5252).copy(alpha = 0.5f)
-                    ),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(48.dp)
-                ) {
-                    if (isRemoving) {
-                        CircularProgressIndicator(
-                            modifier = Modifier.size(18.dp),
-                            color = Color(0xFFFF5252),
-                            strokeWidth = 2.dp
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(
-                            text = "Removing…",
-                            fontWeight = FontWeight.SemiBold,
-                            fontSize = 13.sp
-                        )
-                    } else {
-                        Text(
-                            text = "Remove from Perf List",
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 13.sp
-                        )
-                    }
-                }
-            } else {
-                // Add to Perf List — full width
-                Button(
-                    onClick = {
-                        if (!isAdding) {
-                            isAdding = true
-                            onAddAll { isAdding = false }
-                        }
-                    },
-                    enabled = !isAdding,
-                    shape = RoundedCornerShape(12.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = Color(0xFF0F3B4A),
-                        contentColor = Color.Cyan,
-                        disabledContainerColor = Color(0xFF0F3B4A).copy(alpha = 0.5f),
-                        disabledContentColor = Color.Cyan.copy(alpha = 0.5f)
-                    ),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(48.dp)
-                ) {
-                    if (isAdding) {
-                        CircularProgressIndicator(
-                            modifier = Modifier.size(18.dp),
-                            color = Color.Cyan,
-                            strokeWidth = 2.dp
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(
-                            text = "Adding…",
-                            fontWeight = FontWeight.SemiBold,
-                            fontSize = 13.sp
-                        )
-                    } else {
-                        Text(
-                            text = "Add to Perf List",
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 13.sp
-                        )
-                    }
-                }
-            }
+            Text(
+                text = if (allAdded) "$addedCount games in list" else "$addedCount / ${launcherGames.size} in list",
+                style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
+                color = if (allAdded) Color(0xFF10B981) else Color(0xFF0EA5E9)
+            )
         }
-    }
-}
 
-@Composable
-private fun AotCompileCard(
-    onCompileAll: ((Boolean) -> Unit) -> Unit
-) {
-    var isCompiling by remember { mutableStateOf(false) }
-    var statusText by remember { mutableStateOf<String?>(null) }
-
-    Card(
-        shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-        border = BorderStroke(1.dp, Color.White.copy(alpha = 0.08f)),
-        modifier = Modifier.fillMaxWidth()
-    ) {
-        Column(modifier = Modifier.padding(20.dp)) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Icon(
-                    Icons.Default.Speed,
-                    contentDescription = null,
-                    tint = Color.Cyan,
-                    modifier = Modifier.size(20.dp)
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-                Text(
-                    text = "AOT Speed Compilation",
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.White
-                )
-            }
-
-            Spacer(modifier = Modifier.height(10.dp))
-
-            Text(
-                text = "Pre-compiles all Game Launcher apps into native machine code using ART's speed filter. Eliminates JIT freeze spikes during gameplay.",
-                style = MaterialTheme.typography.bodySmall,
-                color = Color(0xFFB0B3C1),
-                lineHeight = 19.sp
-            )
-
-            AnimatedVisibility(visible = statusText != null) {
-                Column {
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Text(
-                        text = statusText.orEmpty(),
-                        fontSize = 12.sp,
-                        color = if (statusText?.startsWith("Success") == true) Color(0xFF10B981) else Color(0xFFFF5252)
-                    )
-                }
-            }
-
-            Spacer(modifier = Modifier.height(20.dp))
-
+        // Action Buttons Row
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(10.dp)
+        ) {
+            // Button 1: Add/Remove All from perf_game_list
             Button(
                 onClick = {
-                    if (!isCompiling) {
-                        isCompiling = true
-                        statusText = null
-                        onCompileAll { ok ->
-                            isCompiling = false
-                            statusText = if (ok) "Success — all apps compiled to speed filter" else "Compilation failed for one or more apps"
+                    if (!isAddingOrRemoving) {
+                        isAddingOrRemoving = true
+                        if (allAdded) {
+                            onRemoveAllFromPerfList(launcherGames) { isAddingOrRemoving = false }
+                        } else {
+                            onAddAllToPerfList(launcherGames) { isAddingOrRemoving = false }
                         }
                     }
                 },
-                enabled = !isCompiling,
+                enabled = launcherGames.isNotEmpty() && !isAddingOrRemoving,
                 shape = RoundedCornerShape(12.dp),
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = Color(0xFF0F3B4A),
-                    contentColor = Color.Cyan,
-                    disabledContainerColor = Color(0xFF0F3B4A).copy(alpha = 0.5f),
-                    disabledContentColor = Color.Cyan.copy(alpha = 0.5f)
+                    containerColor = if (allAdded) Color(0xFF1E293B) else MaterialTheme.colorScheme.primary,
+                    contentColor = if (allAdded) Color(0xFF38BDF8) else Color.White
                 ),
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .height(48.dp)
+                    .weight(1f)
+                    .height(46.dp)
+            ) {
+                if (isAddingOrRemoving) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(16.dp),
+                        color = Color.White,
+                        strokeWidth = 2.dp
+                    )
+                } else {
+                    Icon(
+                        imageVector = Icons.Default.Bolt,
+                        contentDescription = null,
+                        modifier = Modifier.size(18.dp)
+                    )
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text(
+                        text = if (allAdded) "Remove All" else "Add All Games",
+                        style = MaterialTheme.typography.labelMedium.copy(
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 12.sp
+                        )
+                    )
+                }
+            }
+
+            // Button 2: Speed Compile (AOT)
+            OutlinedButton(
+                onClick = {
+                    if (!isCompiling) {
+                        isCompiling = true
+                        compileStatusText = null
+                        onCompileAll(launcherGames) { ok ->
+                            isCompiling = false
+                            compileStatusText = if (ok) "Compiled successfully" else "Compilation failed"
+                        }
+                    }
+                },
+                enabled = launcherGames.isNotEmpty() && !isCompiling,
+                shape = RoundedCornerShape(12.dp),
+                border = BorderStroke(1.dp, Color(0xFF14B8A6).copy(alpha = 0.5f)),
+                colors = ButtonDefaults.outlinedButtonColors(
+                    contentColor = Color(0xFF14B8A6)
+                ),
+                modifier = Modifier
+                    .weight(1f)
+                    .height(46.dp)
             ) {
                 if (isCompiling) {
                     CircularProgressIndicator(
-                        modifier = Modifier.size(18.dp),
-                        color = Color.Cyan,
+                        modifier = Modifier.size(16.dp),
+                        color = Color(0xFF14B8A6),
                         strokeWidth = 2.dp
                     )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(
-                        text = "Compiling Apps…",
-                        fontWeight = FontWeight.SemiBold,
-                        fontSize = 13.sp
-                    )
                 } else {
+                    Icon(
+                        imageVector = Icons.Default.Layers,
+                        contentDescription = null,
+                        modifier = Modifier.size(18.dp)
+                    )
+                    Spacer(modifier = Modifier.width(6.dp))
                     Text(
-                        text = "Compile Apps",
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 13.sp
+                        text = "Compile All",
+                        style = MaterialTheme.typography.labelMedium.copy(
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 12.sp
+                        )
                     )
                 }
             }
         }
-    }
-}
 
-@Composable
-private fun LivePerfGameListCard(rawList: String?) {
-    Card(
-        shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-        border = BorderStroke(1.dp, Color.White.copy(alpha = 0.08f)),
-        modifier = Modifier.fillMaxWidth()
-    ) {
-        Column(modifier = Modifier.padding(20.dp)) {
-            Text(
-                text = "LIVE perf_game_list",
-                style = MaterialTheme.typography.labelSmall,
-                color = Color(0xFF8E92A2),
-                fontWeight = FontWeight.Bold,
-                letterSpacing = 0.5.sp
-            )
+        AnimatedVisibility(visible = compileStatusText != null) {
+            compileStatusText?.let { msg ->
+                Text(
+                    text = msg,
+                    fontSize = 12.sp,
+                    color = if (msg.contains("success", ignoreCase = true)) Color(0xFF10B981) else Color(0xFFFF5252),
+                    modifier = Modifier.padding(start = 4.dp)
+                )
+            }
+        }
 
-            Spacer(modifier = Modifier.height(12.dp))
+        // Live perf_game_list Card
+        Card(
+            shape = FrameXShapes.Card,
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+            border = BorderStroke(FrameXBorders.ActiveBorderWidth, FrameXBorders.CardStroke),
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Column(modifier = Modifier.padding(14.dp)) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "LIVE perf_game_list",
+                        style = MaterialTheme.typography.labelSmall.copy(
+                            fontWeight = FontWeight.Bold,
+                            letterSpacing = 0.5.sp
+                        ),
+                        color = Color.Gray
+                    )
 
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clip(RoundedCornerShape(12.dp))
-                    .background(Color(0xFF0D0E11))
-                    .border(1.dp, Color.White.copy(0.06f), RoundedCornerShape(12.dp))
-                    .padding(14.dp)
-            ) {
-                when {
-                    rawList == null -> {
-                        CircularProgressIndicator(
-                            modifier = Modifier.size(16.dp),
-                            color = Color(0xFF818CF8),
-                            strokeWidth = 2.dp
+                    IconButton(
+                        onClick = onRefreshPerfList,
+                        modifier = Modifier.size(24.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Refresh,
+                            contentDescription = "Refresh list",
+                            tint = Color.Gray,
+                            modifier = Modifier.size(16.dp)
                         )
                     }
-                    rawList.isBlank() -> {
-                        Text(
-                            text = "perf_game_list is empty on this device",
-                            fontFamily = FontFamily.Monospace,
-                            fontSize = 11.5.sp,
-                            color = Color(0xFF6B7080),
-                            lineHeight = 17.sp
-                        )
-                    }
-                    else -> {
-                        Text(
-                            text = rawList,
-                            fontFamily = FontFamily.Monospace,
-                            fontSize = 11.5.sp,
-                            color = Color(0xFFC7CAD9),
-                            lineHeight = 17.sp
-                        )
+                }
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(10.dp))
+                        .background(Color(0xFF090A0D))
+                        .border(1.dp, Color.White.copy(0.05f), RoundedCornerShape(10.dp))
+                        .padding(12.dp)
+                ) {
+                    when {
+                        rawPerfGameList == null -> {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(16.dp),
+                                color = Color(0xFF0EA5E9),
+                                strokeWidth = 2.dp
+                            )
+                        }
+                        rawPerfGameList.isBlank() -> {
+                            Text(
+                                text = "perf_game_list is currently empty on this device",
+                                fontFamily = FontFamily.Monospace,
+                                fontSize = 11.sp,
+                                color = Color(0xFF6B7080)
+                            )
+                        }
+                        else -> {
+                            Text(
+                                text = rawPerfGameList,
+                                fontFamily = FontFamily.Monospace,
+                                fontSize = 11.sp,
+                                color = Color(0xFFC7CAD9),
+                                lineHeight = 16.sp
+                            )
+                        }
                     }
                 }
             }

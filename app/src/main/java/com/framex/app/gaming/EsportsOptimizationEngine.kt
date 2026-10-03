@@ -90,9 +90,14 @@ class EsportsOptimizationEngine @Inject constructor(
         val uid = snapshot.activeGameUid
         FrameXLog.i("Reverting optimizations for pkg=$pkg, uid=$uid from snapshot", tag = TAG)
 
-        revertPerAppOverrides(pkg, uid)
-        revertSystemDisplayAndTouchSettings(snapshot)
-        revertThermalAndIdleState()
+        val rollbackCmds = mutableListOf<String>()
+        collectPerAppRollbackCommands(rollbackCmds, pkg, uid)
+        collectSystemDisplayAndTouchCommands(rollbackCmds, snapshot)
+        collectThermalAndIdleCommands(rollbackCmds)
+
+        if (rollbackCmds.isNotEmpty()) {
+            shizukuManager.executeCommand(rollbackCmds.joinToString("; "))
+        }
 
         settingsRepository.clearGamingOptimizationSnapshot()
         FrameXLog.i("Snapshot cleared. Esports revert complete!", tag = TAG)
@@ -279,42 +284,40 @@ class EsportsOptimizationEngine @Inject constructor(
     // Granular Reversion Steps
     // =========================================================================
 
-    private suspend fun revertPerAppOverrides(pkg: String?, uid: Int?) {
+    private fun collectPerAppRollbackCommands(cmds: MutableList<String>, pkg: String?, uid: Int?) {
         if (pkg != null) {
-            shizukuManager.executeCommand("cmd game reset $pkg")
+            cmds.add("cmd game reset $pkg")
             if (settingsRepository.cpuPriorityLock.value) {
-                shizukuManager.executeCommand("cmd activity set-bg-restriction-level --user 0 $pkg adaptive_bucket")
-                shizukuManager.executeCommand("am set-standby-bucket --user 0 $pkg working_set")
+                cmds.add("cmd activity set-bg-restriction-level --user 0 $pkg adaptive_bucket")
+                cmds.add("am set-standby-bucket --user 0 $pkg working_set")
             }
-            FrameXLog.i("Per-app game & CPU priority overrides reset for $pkg", tag = TAG)
+            FrameXLog.i("Queued per-app game & CPU priority overrides reset for $pkg", tag = TAG)
         }
 
         if (uid != null && settingsRepository.networkFirewall.value) {
-            shizukuManager.executeCommand("cmd netpolicy remove restrict-background-whitelist $uid")
+            cmds.add("cmd netpolicy remove restrict-background-whitelist $uid")
             if (!pkg.isNullOrBlank()) {
-                shizukuManager.executeCommand("cmd deviceidle whitelist -$pkg")
+                cmds.add("cmd deviceidle whitelist -$pkg")
             }
         }
     }
 
-    private suspend fun revertSystemDisplayAndTouchSettings(snapshot: GamingOptimizationSnapshot) {
-        snapshot.minRefreshRate?.let { restoreSetting("system", "min_refresh_rate", it) }
-        snapshot.peakRefreshRate?.let { restoreSetting("system", "peak_refresh_rate", it) }
-        snapshot.touchResponseSpeed?.let { restoreSetting("system", "touch_response_speed", it) }
+    private fun collectSystemDisplayAndTouchCommands(cmds: MutableList<String>, snapshot: GamingOptimizationSnapshot) {
+        snapshot.minRefreshRate?.let { buildRestoreSettingCommand("system", "min_refresh_rate", it)?.let(cmds::add) }
+        snapshot.peakRefreshRate?.let { buildRestoreSettingCommand("system", "peak_refresh_rate", it)?.let(cmds::add) }
+        snapshot.touchResponseSpeed?.let { buildRestoreSettingCommand("system", "touch_response_speed", it)?.let(cmds::add) }
 
         snapshot.userPreferredDisplayModeId?.let { setting ->
             val value = if (setting.existed && setting.value.isNotBlank()) setting.value else "-1"
-            shizukuManager.executeCommand("settings put secure user_preferred_display_mode_id $value")
-            FrameXLog.i("Restored secure user_preferred_display_mode_id to $value", tag = TAG)
+            cmds.add("settings put secure user_preferred_display_mode_id $value")
         }
     }
 
-    private suspend fun revertThermalAndIdleState() {
-        shizukuManager.executeCommand("cmd deviceidle unforce")
-        shizukuManager.executeCommand("cmd power set-fixed-performance-mode-enabled false")
-        shizukuManager.executeCommand("cmd thermalservice reset")
+    private fun collectThermalAndIdleCommands(cmds: MutableList<String>) {
+        cmds.add("cmd deviceidle unforce")
+        cmds.add("cmd power set-fixed-performance-mode-enabled false")
+        cmds.add("cmd thermalservice reset")
         settingsRepository.markThermalOverrideRecoveryComplete()
-        FrameXLog.i("Network policy, deviceidle, fixed performance mode & thermal reset", tag = TAG)
     }
 
     private suspend fun unsuspendAllTrackedPackages(snapshot: GamingOptimizationSnapshot?) {
@@ -370,23 +373,27 @@ class EsportsOptimizationEngine @Inject constructor(
         )
     }
 
-    private suspend fun restoreSetting(namespace: String, key: String, setting: SettingValue) {
-        if (setting.existed && setting.value.isNotBlank()) {
-            shizukuManager.executeCommand("settings put $namespace $key ${setting.value}")
+    private fun buildRestoreSettingCommand(namespace: String, key: String, setting: SettingValue): String? {
+        return if (setting.existed && setting.value.isNotBlank()) {
+            "settings put $namespace $key ${setting.value}"
+        } else if (setting.existed) {
+            "settings delete $namespace $key"
         } else {
-            shizukuManager.executeCommand("settings delete $namespace $key")
+            null
+        }
+    }
+
+    private suspend fun restoreSetting(namespace: String, key: String, setting: SettingValue) {
+        buildRestoreSettingCommand(namespace, key, setting)?.let {
+            shizukuManager.executeCommand(it)
         }
     }
 
     private suspend fun executeCommandList(commands: List<String>): Boolean {
-        var allSucceeded = true
-        for (cmd in commands) {
-            val result = shizukuManager.executeCommandWithResult(cmd)
-            if (result == null || result.exitCode != 0) {
-                allSucceeded = false
-            }
-        }
-        return allSucceeded
+        if (commands.isEmpty()) return true
+        val batchPayload = commands.joinToString("; ")
+        val exitCode = shizukuManager.executeCommandWithExitCode(batchPayload)
+        return exitCode == 0
     }
 
     private suspend fun revertLegacy() {

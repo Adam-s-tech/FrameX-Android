@@ -89,30 +89,55 @@ open class VivoGamingOptimizer @Inject constructor(
 
         FrameXLog.i("Applying Vivo & iQOO hardware optimizations (pkg=$packageName, pid=$pid)...", tag = TAG)
 
-        onProgress?.invoke(0.60f, "Enforcing Monster Mode (5) & Governor…")
         captureBaselineSnapshot()
+
+        val hasAnySpecificOptimization = settingsRepository.vivoMonsterMode.value ||
+            settingsRepository.disableThermalThrottling.value ||
+            settingsRepository.vivo144FpsUnlock.value ||
+            (settingsRepository.vivoGameHandshake.value && packageName != null && pid > 0) ||
+            settingsRepository.vivoGyroPromotion.value ||
+            settingsRepository.vivoTouchOptimization.value ||
+            settingsRepository.vivoVipThread.value
+
+        if (!hasAnySpecificOptimization) {
+            onProgress?.invoke(0.70f, "Applying Baseline Optimizations…")
+        }
+
+        if (settingsRepository.vivoMonsterMode.value) {
+            onProgress?.invoke(0.60f, "Enforcing Monster Mode (5)…")
+        }
         executePowerAndThermalPayload()
 
-        onProgress?.invoke(0.68f, "Disabling Thermal Auto-Exit & Brightness Dimming…")
+        if (settingsRepository.disableThermalThrottling.value || settingsRepository.vivo144FpsUnlock.value) {
+            onProgress?.invoke(0.68f, "Configuring Display & Thermals…")
+        }
         executeDisplayAndGameSpacePayload()
 
-        val targetFps = maxHardwareRefreshRate
-        onProgress?.invoke(0.76f, "Initializing Game Handshake & ${targetFps} FPS Target…")
+        if (settingsRepository.vivoGameHandshake.value && packageName != null && pid > 0) {
+            val targetFps = if (settingsRepository.vivo144FpsUnlock.value) 144 else maxHardwareRefreshRate
+            onProgress?.invoke(0.76f, "Initializing Game Handshake (${targetFps} FPS)…")
+        }
         executeLiveHandshakePayload(packageName, pid)
 
-        onProgress?.invoke(0.84f, "Activating Hardware Gyroscope & Anti-Shake…")
+        if (settingsRepository.vivoGyroPromotion.value) {
+            onProgress?.invoke(0.84f, "Activating Hardware Gyroscope…")
+        }
         executeHardwareGyroPayload(packageName)
 
-        onProgress?.invoke(0.90f, "Tuning Touch Response (1,5,5,5) & Trajectory Smooth…")
+        if (settingsRepository.vivoTouchOptimization.value) {
+            onProgress?.invoke(0.90f, "Tuning Touch Response…")
+        }
         executeTouchDigitizerPayload(packageName)
 
-        onProgress?.invoke(0.96f, "Assigning Unrestricted Top-App Cgroup & VIP Sched…")
+        if (settingsRepository.vivoVipThread.value) {
+            onProgress?.invoke(0.96f, "Assigning VIP Scheduler…")
+        }
         executeKernelSchedulerPayload(packageName)
 
         FrameXLog.i("Vivo & iQOO optimization sequence applied successfully", tag = TAG)
         addLog(
             "Gaming Mode Activation",
-            "Monster Mode (5), Display/Thermal lock, VIP Cgroup & 27 settings applied" + if (packageName != null) " (Target: $packageName, PID: $pid)" else "",
+            "Hardware gaming optimizations applied" + if (packageName != null) " (Target: $packageName, PID: $pid)" else "",
             LogStatus.SUCCESS
         )
         true
@@ -337,7 +362,6 @@ open class VivoGamingOptimizer @Inject constructor(
         revertCmds.add("content insert --uri content://settings/system --bind name:s:com.vivo.vivoconsole.icon.status --bind value:s:${baselineVivoConsoleStatus ?: "0"}")
         revertCmds.add("content insert --uri content://settings/system --bind name:s:game_optimize_brightness --bind value:s:${baselineGameOptimizeBrightness ?: "1"}")
         revertCmds.add("content insert --uri content://settings/secure --bind name:s:game_cube_temper_control --bind value:s:${baselineGameCubeTemperControl ?: "1"}")
-        revertCmds.add("content delete --uri content://settings/system/gamecube_frame_interpolation_for_sr")
 
         // 3. Touch Digitizer & Delays
         baselineVtsGameParaAdjust?.let {
@@ -345,34 +369,28 @@ open class VivoGamingOptimizer @Inject constructor(
         }
         revertCmds.add("content insert --uri content://settings/system --bind name:s:touch_smooth --bind value:s:${baselineTouchSmooth ?: "0"}")
         revertCmds.add("content insert --uri content://settings/global --bind name:s:game_memc_request_touch_rate --bind value:s:${baselineMemcTouchRate ?: "60"}")
-        revertCmds.add("content delete --uri content://settings/system/vivo_game_click_delay_promotion")
-        revertCmds.add("content delete --uri content://settings/system/vivo_game_touch_delay_promotion")
 
         // 4. Hardware Gyroscope Suite
-        revertCmds.add("content delete --uri content://settings/system/vivo_game_gyro_promotion")
-        revertCmds.add("content delete --uri content://settings/system/vivo_game_gyro_dealy_promotion")
-        revertCmds.add("content delete --uri content://settings/system/vivo_game_gyro_anti_shake_promotion")
         revertCmds.add("content insert --uri content://settings/system --bind name:s:vivo_game_gyro_data_prediction --bind value:s:0")
 
-        // 5. Live Handshake (Target FPS & Scene)
-        revertCmds.add("content delete --uri content://settings/system/sdk_game_target_fps")
-        revertCmds.add("content delete --uri content://settings/system/sdk_game_scene")
-        revertCmds.add("content delete --uri content://settings/secure/sdk_game_scene")
-
-        // 6. Kernel, VIP Threads & Phantoms
+        // 5. Kernel, VIP Threads & Phantoms
         revertCmds.add("content insert --uri content://settings/global --bind name:s:game_cube_vip_thread --bind value:s:${baselineGameCubeVipThread ?: "0"}")
         revertCmds.add("settings put global settings_enable_monitor_phantom_procs ${baselineMonitorPhantomProcs ?: "true"}")
-        revertCmds.add("content delete --uri content://settings/global/speed_mode_apps")
 
-        // 7. Periodic Maintenance Flags
+        // 6. Periodic Maintenance Flags
         revertCmds.add("content insert --uri content://settings/system --bind name:s:game_plus_mode_key --bind value:s:0")
         revertCmds.add("content insert --uri content://settings/system --bind name:s:game_standard_promotion_mode --bind value:s:0")
         revertCmds.add("content insert --uri content://settings/system --bind name:s:game_scene_more_fps --bind value:s:0")
 
-        // 8. Background Restriction
+        // 7. Background Restriction
         activeGamePackage?.let { pkg ->
             revertCmds.add("cmd activity set-bg-restriction-level --user 0 $pkg adaptive")
         }
+
+        // 8. O(1) Batched Deletes across System, Secure, and Global tables (replaces 10 individual JVM spawns with 3)
+        revertCmds.add("content delete --uri content://settings/system --where \"name IN ('gamecube_frame_interpolation_for_sr','vivo_game_click_delay_promotion','vivo_game_touch_delay_promotion','vivo_game_gyro_promotion','vivo_game_gyro_dealy_promotion','vivo_game_gyro_anti_shake_promotion','sdk_game_target_fps','sdk_game_scene')\"")
+        revertCmds.add("content delete --uri content://settings/secure --where \"name = 'sdk_game_scene'\"")
+        revertCmds.add("content delete --uri content://settings/global --where \"name = 'speed_mode_apps'\"")
 
         val exitCode = shizukuManager.executeCommandWithExitCode(revertCmds.joinToString("; "))
         val success = (exitCode == 0)

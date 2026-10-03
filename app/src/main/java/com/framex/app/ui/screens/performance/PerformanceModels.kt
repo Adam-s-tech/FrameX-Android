@@ -1,7 +1,6 @@
 package com.framex.app.ui.screens.performance
 
 import androidx.compose.runtime.Immutable
-import com.framex.app.device.StorageInfo
 import com.framex.app.gaming.AppInfo
 import com.framex.app.gaming.GamingModeState
 import com.framex.app.gaming.SystemAuditLog
@@ -44,24 +43,14 @@ data class PerformanceUiState(
     val vivoAuditLogs: List<SystemAuditLog> = emptyList(),
     val auditLoggingEnabled: Boolean = false,
     val maxRefreshRate: Int = 60,
-    val safeToSuspendList: List<String> = emptyList(),
-    val gamingDaemonsList: List<String> = emptyList(),
 
-    // Storage & System Access
-    val storageInfo: StorageInfo = StorageInfo(),
+    // System Access
     val hasDndAccess: Boolean = false,
     val hasNotifListenerAccess: Boolean = false,
     val hasWriteSettingsAccess: Boolean = false,
 
-    // Action execution states
-    val isBoostingRam: Boolean = false,
-    val isOptimizingNet: Boolean = false,
-    val isResettingDefaults: Boolean = false,
+    // Banner message
     val bannerMessage: String? = null,
-    val activeLatencyDiagnostic: Int? = null,
-    val showRamResult: Boolean = false,
-    val showPingResult: Boolean = false,
-    val showResetResult: Boolean = false,
 
     // Dialog & Modal visibility states
     val showAddGameSheet: Boolean = false,
@@ -75,7 +64,6 @@ data class PerformanceUiState(
 sealed interface PerformanceUiEvent {
     data class ToggleWhitelist(val packageName: String) : PerformanceUiEvent
     data class ToggleLauncherGame(val packageName: String) : PerformanceUiEvent
-    data class ToggleFixedPerformanceMode(val enabled: Boolean) : PerformanceUiEvent
     data class ToggleDeepFreeze(val enabled: Boolean) : PerformanceUiEvent
     data object DismissDeepFreezeNotice : PerformanceUiEvent
 
@@ -83,14 +71,10 @@ sealed interface PerformanceUiEvent {
     data object DisableGamingMode : PerformanceUiEvent
     data class LaunchGame(val packageName: String) : PerformanceUiEvent
 
-    data object BoostRam : PerformanceUiEvent
-    data object CheckPing : PerformanceUiEvent
-    data object ResetDefaults : PerformanceUiEvent
-
     data object RefreshVivoPerfList : PerformanceUiEvent
-    data class AddAllToPerfList(val packages: Set<String>) : PerformanceUiEvent
-    data class RemoveAllFromPerfList(val packages: Set<String>) : PerformanceUiEvent
-    data class CompileAllSpeed(val packages: Set<String>) : PerformanceUiEvent
+    data class AddAllToPerfList(val packages: Set<String>, val onComplete: (Boolean) -> Unit = {}) : PerformanceUiEvent
+    data class RemoveAllFromPerfList(val packages: Set<String>, val onComplete: (Boolean) -> Unit = {}) : PerformanceUiEvent
+    data class CompileAllSpeed(val packages: Set<String>, val onComplete: (Boolean) -> Unit = {}) : PerformanceUiEvent
 
     data class ToggleAuditLogging(val enabled: Boolean) : PerformanceUiEvent
     data object ClearAuditLogs : PerformanceUiEvent
@@ -134,34 +118,22 @@ data class VivoGroup(
 )
 
 data class SystemAccessGroup(
-    val storageInfo: StorageInfo,
     val hasDndAccess: Boolean,
     val hasNotifListenerAccess: Boolean,
     val hasWriteSettingsAccess: Boolean
 )
 
-data class ActionStateGroup(
-    val isBoostingRam: Boolean,
-    val isOptimizingNet: Boolean,
-    val isResettingDefaults: Boolean,
-    val bannerMessage: String?,
-    val activeLatencyDiagnostic: Int?
-)
-
 data class DialogStateGroup(
     val showAddGameSheet: Boolean,
     val configGamePkg: String?,
-    val activeDeployingGamePkg: String?,
-    val showRamResult: Boolean,
-    val showPingResult: Boolean,
-    val showResetResult: Boolean
+    val activeDeployingGamePkg: String?
 )
 
 data class IntermediateUiState(
     val userApps: List<AppInfo>,
     val googleApps: List<AppInfo>,
     val activeSession: ActiveGamingSession?,
-    val actions: ActionStateGroup,
+    val bannerMessage: String?,
     val dialogs: DialogStateGroup,
     val systemAccess: SystemAccessGroup
 )

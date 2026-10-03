@@ -335,16 +335,29 @@ class CommandRunnerService private constructor(
     }
 
     override fun suspendPackages(packageNames: Array<out String>?, suspended: Boolean): SuspendResult {
-        val failed = mutableListOf<String>()
         if (packageNames.isNullOrEmpty()) {
             return SuspendResult().apply {
                 this.failedPackages = emptyArray()
                 this.successCount = 0
             }
         }
-        var successCount = 0
         val action = if (suspended) "suspend" else "unsuspend"
-        for (pkg in packageNames) {
+        val validPkgs = packageNames.filter { it.isNotBlank() }
+
+        // O(1) Fast-Path: Execute all target packages in a single cmd package invocation.
+        val batchCmd = "cmd package $action --user 0 ${validPkgs.joinToString(" ")}"
+        val batchResult = executeCommandWithResult(batchCmd)
+        if (batchResult.exitCode == 0) {
+            return SuspendResult().apply {
+                this.failedPackages = emptyArray()
+                this.successCount = validPkgs.size
+            }
+        }
+
+        // Resilient fallback: If batch command encounters syntax or package issues, evaluate individually.
+        val failed = mutableListOf<String>()
+        var successCount = 0
+        for (pkg in validPkgs) {
             val cmd = "cmd package $action --user 0 $pkg"
             val result = executeCommandWithResult(cmd)
             if (result.exitCode == 0) {

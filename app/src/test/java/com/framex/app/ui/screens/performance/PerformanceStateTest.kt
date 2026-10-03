@@ -6,6 +6,7 @@ import androidx.compose.ui.graphics.colorspace.ColorSpace
 import androidx.compose.ui.graphics.colorspace.ColorSpaces
 import com.framex.app.gaming.GamingModeState
 import com.framex.app.gaming.ledger.LedgerSummary
+import com.framex.app.ui.screens.performance.components.HeroBackgroundCache
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
@@ -74,5 +75,26 @@ class PerformanceStateTest {
     fun performanceUiStateHonorsPersistedDeepFreezeNotice() {
         val state = PerformanceUiState(hasSeenDeepFreezeNotice = true)
         assertTrue(state.hasSeenDeepFreezeNotice)
+    }
+
+    @Test
+    fun heroBackgroundCachePutAndGet() {
+        val dummyBitmap = object : ImageBitmap {
+            override val width: Int get() = 1
+            override val height: Int get() = 1
+            override val colorSpace: ColorSpace get() = ColorSpaces.Srgb
+            override val config: ImageBitmapConfig get() = ImageBitmapConfig.Argb8888
+            override val hasAlpha: Boolean get() = false
+            override fun readPixels(buffer: IntArray, startX: Int, startY: Int, width: Int, height: Int, bufferOffset: Int, stride: Int) {}
+            override fun prepareToDraw() {}
+        }
+        val resId = 12345
+        assertNull(HeroBackgroundCache.get(resId))
+
+        HeroBackgroundCache.putForTesting(resId, dummyBitmap)
+        assertEquals(dummyBitmap, HeroBackgroundCache.get(resId))
+
+        HeroBackgroundCache.clear()
+        assertNull(HeroBackgroundCache.get(resId))
     }
 }
