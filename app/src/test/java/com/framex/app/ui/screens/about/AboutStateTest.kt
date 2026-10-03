@@ -26,7 +26,25 @@ class AboutStateTest {
         assertFalse(state.isVivoDevice)
         assertFalse(state.isVivoOptActive)
         assertFalse(state.showVivoDiagModal)
+        assertEquals(ExecutionCenterTab.COMMON, state.selectedExecutionTab)
         assertFalse(state.disableThermalThrottling)
+        assertTrue(state.ramCachePreTrimEnabled)
+        assertTrue(state.disablePhantomProcKiller)
+        assertTrue(state.cpuPriorityLock)
+        assertFalse(state.fixedPerformanceMode)
+        assertFalse(state.networkFirewall)
+        assertFalse(state.refreshRateLock)
+        assertFalse(state.touchBoost)
+        assertFalse(state.vivoMonsterMode)
+        assertFalse(state.vivoVipThread)
+        assertFalse(state.vivoGameHandshake)
+        assertFalse(state.vivoGyroPromotion)
+        assertFalse(state.vivoTouchOptimization)
+        assertFalse(state.vivo144FpsUnlock)
+        assertFalse(state.vivoMaintenancePulse)
+        assertFalse(state.vivoPulseGamePlusMode)
+        assertFalse(state.vivoPulseStandardPromotion)
+        assertFalse(state.vivoPulseSceneMoreFps)
         assertFalse(state.hasCrashLog)
         assertNull(state.pendingInstallApk)
         assertFalse(state.waitingForInstallPermission)
@@ -52,6 +70,12 @@ class AboutStateTest {
             updateInfoState = mockUpdate,
             isVivoDevice = true,
             isVivoOptActive = true,
+            selectedExecutionTab = ExecutionCenterTab.VIVO,
+            disableThermalThrottling = true,
+            fixedPerformanceMode = true,
+            vivo144FpsUnlock = true,
+            vivoMaintenancePulse = true,
+            vivoPulseGamePlusMode = true,
             hasCrashLog = true,
             waitingForInstallPermission = true
         )
@@ -64,6 +88,12 @@ class AboutStateTest {
         assertEquals(mockUpdate, updated.updateInfoState)
         assertTrue(updated.isVivoDevice)
         assertTrue(updated.isVivoOptActive)
+        assertEquals(ExecutionCenterTab.VIVO, updated.selectedExecutionTab)
+        assertTrue(updated.disableThermalThrottling)
+        assertTrue(updated.fixedPerformanceMode)
+        assertTrue(updated.vivo144FpsUnlock)
+        assertTrue(updated.vivoMaintenancePulse)
+        assertTrue(updated.vivoPulseGamePlusMode)
         assertTrue(updated.hasCrashLog)
         assertTrue(updated.waitingForInstallPermission)
     }

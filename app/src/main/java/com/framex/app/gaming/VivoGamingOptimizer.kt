@@ -146,7 +146,11 @@ open class VivoGamingOptimizer @Inject constructor(
             com.framex.app.gaming.ledger.CommandSpec("content insert --uri content://settings/system --bind name:s:power_sleep_mode_enabled --bind value:s:0", com.framex.app.gaming.ledger.OpPriority.DETAIL),
             com.framex.app.gaming.ledger.CommandSpec("content insert --uri content://settings/global --bind name:s:low_power_mode_opened --bind value:s:0", com.framex.app.gaming.ledger.OpPriority.DETAIL)
         )
-        ledgerExecutor.executeBatch(com.framex.app.gaming.ledger.Stage.POWER, specs)
+        if (settingsRepository.vivoMonsterMode.value) {
+            ledgerExecutor.executeBatch(com.framex.app.gaming.ledger.Stage.POWER, specs)
+        } else {
+            ledgerExecutor.recordSkipped(com.framex.app.gaming.ledger.Stage.POWER, specs)
+        }
     }
 
     private suspend fun executeDisplayAndGameSpacePayload() {
@@ -157,19 +161,22 @@ open class VivoGamingOptimizer @Inject constructor(
         if (settingsRepository.disableThermalThrottling.value) {
             specs.add(com.framex.app.gaming.ledger.CommandSpec("content insert --uri content://settings/secure --bind name:s:game_cube_temper_control --bind value:s:0", com.framex.app.gaming.ledger.OpPriority.PRIMARY))
         }
+        if (settingsRepository.vivo144FpsUnlock.value) {
+            specs.add(com.framex.app.gaming.ledger.CommandSpec("content insert --uri content://settings/system --bind name:s:gamecube_frame_interpolation_for_sr --bind value:s:\"1:1:1:72:144\"", com.framex.app.gaming.ledger.OpPriority.PRIMARY))
+        }
         ledgerExecutor.executeBatch(com.framex.app.gaming.ledger.Stage.DISPLAY, specs)
     }
 
     private suspend fun executeLiveHandshakePayload(packageName: String?, pid: Int) {
         val safePkg = com.framex.app.utils.ShellSanitizer.sanitizePackageName(packageName)
         val targetPkg = safePkg ?: "com.vivo.game"
-        val targetFps = maxHardwareRefreshRate
+        val targetFps = if (settingsRepository.vivo144FpsUnlock.value) 144 else maxHardwareRefreshRate
         val specs = listOf(
             com.framex.app.gaming.ledger.CommandSpec("content insert --uri content://settings/system --bind name:s:sdk_game_target_fps --bind value:s:\"${targetPkg}_${pid}_$targetFps\"", com.framex.app.gaming.ledger.OpPriority.PRIMARY),
             com.framex.app.gaming.ledger.CommandSpec("content insert --uri content://settings/system --bind name:s:sdk_game_scene --bind value:s:\"${targetPkg}_${pid}_0\"", com.framex.app.gaming.ledger.OpPriority.PRIMARY),
             com.framex.app.gaming.ledger.CommandSpec("content insert --uri content://settings/secure --bind name:s:sdk_game_scene --bind value:s:\"${targetPkg}_${pid}_0\"", com.framex.app.gaming.ledger.OpPriority.DETAIL)
         )
-        if (safePkg != null && pid > 0) {
+        if (settingsRepository.vivoGameHandshake.value && safePkg != null && pid > 0) {
             ledgerExecutor.executeBatch(com.framex.app.gaming.ledger.Stage.HANDSHAKE, specs)
         } else {
             ledgerExecutor.recordSkipped(com.framex.app.gaming.ledger.Stage.HANDSHAKE, specs)
@@ -185,7 +192,7 @@ open class VivoGamingOptimizer @Inject constructor(
             com.framex.app.gaming.ledger.CommandSpec("content insert --uri content://settings/system --bind name:s:vivo_game_gyro_anti_shake_promotion --bind value:s:\"$targetPkg#1\"", com.framex.app.gaming.ledger.OpPriority.DETAIL),
             com.framex.app.gaming.ledger.CommandSpec("content insert --uri content://settings/system --bind name:s:vivo_game_gyro_data_prediction --bind value:s:1", com.framex.app.gaming.ledger.OpPriority.DETAIL)
         )
-        if (safePkg != null) {
+        if (settingsRepository.vivoGyroPromotion.value && safePkg != null) {
             ledgerExecutor.executeBatch(com.framex.app.gaming.ledger.Stage.GYRO, specs)
         } else {
             ledgerExecutor.recordSkipped(com.framex.app.gaming.ledger.Stage.GYRO, specs)
@@ -209,21 +216,34 @@ open class VivoGamingOptimizer @Inject constructor(
             )
             ledgerExecutor.recordSkipped(com.framex.app.gaming.ledger.Stage.TOUCH, skippedPerGame)
         }
-        ledgerExecutor.executeBatch(com.framex.app.gaming.ledger.Stage.TOUCH, specs)
+        if (settingsRepository.vivoTouchOptimization.value) {
+            ledgerExecutor.executeBatch(com.framex.app.gaming.ledger.Stage.TOUCH, specs)
+        } else {
+            ledgerExecutor.recordSkipped(com.framex.app.gaming.ledger.Stage.TOUCH, specs)
+        }
     }
 
     private suspend fun executeKernelSchedulerPayload(packageName: String?) {
-        val specs = mutableListOf(
-            com.framex.app.gaming.ledger.CommandSpec("content insert --uri content://settings/global --bind name:s:game_cube_vip_thread --bind value:s:1", com.framex.app.gaming.ledger.OpPriority.PRIMARY),
-            com.framex.app.gaming.ledger.CommandSpec("cmd device_config put activity_manager max_phantom_processes 2147483647", com.framex.app.gaming.ledger.OpPriority.DETAIL),
-            com.framex.app.gaming.ledger.CommandSpec("settings put global settings_enable_monitor_phantom_procs false", com.framex.app.gaming.ledger.OpPriority.DETAIL)
-        )
+        val specs = mutableListOf<com.framex.app.gaming.ledger.CommandSpec>()
+        if (settingsRepository.vivoVipThread.value) {
+            specs.add(com.framex.app.gaming.ledger.CommandSpec("content insert --uri content://settings/global --bind name:s:game_cube_vip_thread --bind value:s:1", com.framex.app.gaming.ledger.OpPriority.PRIMARY))
+        }
+        if (settingsRepository.disablePhantomProcKiller.value) {
+            specs.add(com.framex.app.gaming.ledger.CommandSpec("cmd device_config put activity_manager max_phantom_processes 2147483647", com.framex.app.gaming.ledger.OpPriority.DETAIL))
+            specs.add(com.framex.app.gaming.ledger.CommandSpec("settings put global settings_enable_monitor_phantom_procs false", com.framex.app.gaming.ledger.OpPriority.DETAIL))
+        }
         val safePkg = com.framex.app.utils.ShellSanitizer.sanitizePackageName(packageName)
         if (safePkg != null) {
-            specs.add(com.framex.app.gaming.ledger.CommandSpec("cmd activity set-bg-restriction-level --user 0 $safePkg unrestricted", com.framex.app.gaming.ledger.OpPriority.DETAIL))
-            specs.add(com.framex.app.gaming.ledger.CommandSpec("content insert --uri content://settings/global --bind name:s:speed_mode_apps --bind value:s:$safePkg", com.framex.app.gaming.ledger.OpPriority.DETAIL))
+            if (settingsRepository.cpuPriorityLock.value) {
+                specs.add(com.framex.app.gaming.ledger.CommandSpec("cmd activity set-bg-restriction-level --user 0 $safePkg unrestricted", com.framex.app.gaming.ledger.OpPriority.DETAIL))
+            }
+            if (settingsRepository.vivoVipThread.value) {
+                specs.add(com.framex.app.gaming.ledger.CommandSpec("content insert --uri content://settings/global --bind name:s:speed_mode_apps --bind value:s:$safePkg", com.framex.app.gaming.ledger.OpPriority.DETAIL))
+            }
         }
-        ledgerExecutor.executeBatch(com.framex.app.gaming.ledger.Stage.KERNEL, specs)
+        if (specs.isNotEmpty()) {
+            ledgerExecutor.executeBatch(com.framex.app.gaming.ledger.Stage.KERNEL, specs)
+        }
     }
 
     // =========================================================================
@@ -240,14 +260,27 @@ open class VivoGamingOptimizer @Inject constructor(
 
     suspend fun runPeriodicMaintenance() = withContext(Dispatchers.IO) {
         if (!shizukuManager.isShizukuAvailable.value || !shizukuManager.hasPermission.value) return@withContext
+        if (!settingsRepository.vivoMaintenancePulse.value) {
+            FrameXLog.d("Periodic maintenance pulse disabled by user setting", tag = TAG)
+            return@withContext
+        }
         FrameXLog.d("Executing 2-minute Vivo gaming maintenance pulse...", tag = TAG)
 
-        val specs = listOf(
-            com.framex.app.gaming.ledger.CommandSpec("content insert --uri content://settings/system --bind name:s:game_plus_mode_key --bind value:s:1", com.framex.app.gaming.ledger.OpPriority.PRIMARY),
-            com.framex.app.gaming.ledger.CommandSpec("content insert --uri content://settings/system --bind name:s:game_standard_promotion_mode --bind value:s:1", com.framex.app.gaming.ledger.OpPriority.DETAIL),
-            com.framex.app.gaming.ledger.CommandSpec("content insert --uri content://settings/system --bind name:s:game_scene_more_fps --bind value:s:1", com.framex.app.gaming.ledger.OpPriority.PRIMARY)
-        )
-        val allPassed = ledgerExecutor.executeBatch(com.framex.app.gaming.ledger.Stage.POWER, specs)
+        val specs = mutableListOf<com.framex.app.gaming.ledger.CommandSpec>()
+        if (settingsRepository.vivoPulseGamePlusMode.value) {
+            specs.add(com.framex.app.gaming.ledger.CommandSpec("content insert --uri content://settings/system --bind name:s:game_plus_mode_key --bind value:s:1", com.framex.app.gaming.ledger.OpPriority.PRIMARY))
+        }
+        if (settingsRepository.vivoPulseStandardPromotion.value) {
+            specs.add(com.framex.app.gaming.ledger.CommandSpec("content insert --uri content://settings/system --bind name:s:game_standard_promotion_mode --bind value:s:1", com.framex.app.gaming.ledger.OpPriority.DETAIL))
+        }
+        if (settingsRepository.vivoPulseSceneMoreFps.value) {
+            specs.add(com.framex.app.gaming.ledger.CommandSpec("content insert --uri content://settings/system --bind name:s:game_scene_more_fps --bind value:s:1", com.framex.app.gaming.ledger.OpPriority.PRIMARY))
+        }
+        val allPassed = if (specs.isNotEmpty()) {
+            ledgerExecutor.executeBatch(com.framex.app.gaming.ledger.Stage.POWER, specs)
+        } else {
+            true
+        }
 
         activeGamePackage?.let { pkg ->
             if (activeGamePid <= 0) {
@@ -304,6 +337,7 @@ open class VivoGamingOptimizer @Inject constructor(
         revertCmds.add("content insert --uri content://settings/system --bind name:s:com.vivo.vivoconsole.icon.status --bind value:s:${baselineVivoConsoleStatus ?: "0"}")
         revertCmds.add("content insert --uri content://settings/system --bind name:s:game_optimize_brightness --bind value:s:${baselineGameOptimizeBrightness ?: "1"}")
         revertCmds.add("content insert --uri content://settings/secure --bind name:s:game_cube_temper_control --bind value:s:${baselineGameCubeTemperControl ?: "1"}")
+        revertCmds.add("content delete --uri content://settings/system/gamecube_frame_interpolation_for_sr")
 
         // 3. Touch Digitizer & Delays
         baselineVtsGameParaAdjust?.let {

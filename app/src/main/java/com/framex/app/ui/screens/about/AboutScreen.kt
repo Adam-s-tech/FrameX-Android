@@ -132,8 +132,8 @@ fun AboutScreen(
             Spacer(modifier = Modifier.height(28.dp))
 
             ExecutionCenterSection(
-                disableThermalThrottling = state.disableThermalThrottling,
-                onToggleDisableThermalThrottling = { onEvent(AboutUiEvent.SetDisableThermalThrottling(it)) }
+                state = state,
+                onEvent = onEvent
             )
 
             Spacer(modifier = Modifier.height(32.dp))

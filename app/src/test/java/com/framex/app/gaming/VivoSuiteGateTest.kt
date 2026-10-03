@@ -788,5 +788,59 @@ class VivoSuiteGateTest {
         assertFalse("disableThermalThrottling flow must emit false", repo.disableThermalThrottling.first())
         assertEquals(false, prefsData["gaming_disable_thermal_throttling"])
     }
+
+    @Test
+    fun granularExecutionSettings_defaultsAndPersistence() = runBlocking {
+        val prefsData = mutableMapOf<String, Any?>()
+        val prefs = createMockSharedPreferences(prefsData)
+        val context = MockContext(prefs)
+        val repo = SettingsRepository(context)
+
+        // Common defaults
+        assertTrue(repo.ramCachePreTrimEnabled.first())
+        assertTrue(repo.disablePhantomProcKiller.first())
+        assertTrue(repo.cpuPriorityLock.first())
+
+        // Generic defaults (all false)
+        assertFalse(repo.fixedPerformanceMode.first())
+        assertFalse(repo.networkFirewall.first())
+        assertFalse(repo.refreshRateLock.first())
+        assertFalse(repo.touchBoost.first())
+
+        // Vivo defaults (all false)
+        assertFalse(repo.vivoMonsterMode.first())
+        assertFalse(repo.vivoVipThread.first())
+        assertFalse(repo.vivoGameHandshake.first())
+        assertFalse(repo.vivoGyroPromotion.first())
+        assertFalse(repo.vivoTouchOptimization.first())
+        assertFalse(repo.vivo144FpsUnlock.first())
+        assertFalse(repo.vivoMaintenancePulse.first())
+        assertFalse(repo.vivoPulseGamePlusMode.first())
+        assertFalse(repo.vivoPulseStandardPromotion.first())
+        assertFalse(repo.vivoPulseSceneMoreFps.first())
+
+        // Test toggling
+        repo.setRamCachePreTrimEnabled(false)
+        assertFalse(repo.ramCachePreTrimEnabled.first())
+
+        repo.setDisablePhantomProcKiller(false)
+        assertFalse(repo.disablePhantomProcKiller.first())
+
+        repo.setFixedPerformanceMode(true)
+        assertTrue(repo.fixedPerformanceMode.first())
+
+        repo.setVivoMonsterMode(true)
+        assertTrue(repo.vivoMonsterMode.first())
+
+        repo.setVivo144FpsUnlock(true)
+        assertTrue(repo.vivo144FpsUnlock.first())
+
+        repo.setVivoMaintenancePulse(true)
+        assertTrue(repo.vivoMaintenancePulse.first())
+
+        repo.setVivoPulseGamePlusMode(true)
+        assertTrue(repo.vivoPulseGamePlusMode.first())
+    }
 }
+
 

@@ -23,17 +23,24 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Bolt
 import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.Memory
+import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.filled.ScreenRotation
+import androidx.compose.material.icons.filled.Security
+import androidx.compose.material.icons.filled.Speed
+import androidx.compose.material.icons.filled.SportsEsports
 import androidx.compose.material.icons.filled.Terminal
 import androidx.compose.material.icons.filled.Thermostat
-import androidx.compose.material.icons.filled.WarningAmber
+import androidx.compose.material.icons.filled.Timer
+import androidx.compose.material.icons.filled.TouchApp
+import androidx.compose.material.icons.filled.Wifi
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Switch
-import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -45,16 +52,18 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.framex.app.ui.components.WovenNetBackground
+import com.framex.app.ui.screens.about.components.ChildCommandToggleRow
+import com.framex.app.ui.screens.about.components.CommandToggleCard
+import com.framex.app.ui.screens.about.components.ExperimentalSectionDivider
 
 @Composable
 fun ExecutionCenterSection(
-    disableThermalThrottling: Boolean,
-    onToggleDisableThermalThrottling: (Boolean) -> Unit,
+    state: AboutUiState,
+    onEvent: (AboutUiEvent) -> Unit,
     modifier: Modifier = Modifier
 ) {
     var isExpanded by remember { mutableStateOf(false) }
@@ -62,6 +71,14 @@ fun ExecutionCenterSection(
         targetValue = if (isExpanded) 180f else 0f,
         label = "chevron_rotation"
     )
+
+    val availableTabs = remember(state.isVivoDevice, state.isVivoOptActive) {
+        if (state.isVivoDevice || state.isVivoOptActive) {
+            listOf(ExecutionCenterTab.COMMON, ExecutionCenterTab.GENERIC, ExecutionCenterTab.VIVO)
+        } else {
+            listOf(ExecutionCenterTab.COMMON, ExecutionCenterTab.GENERIC)
+        }
+    }
 
     Column(modifier = modifier.fillMaxWidth()) {
         Text(
@@ -83,65 +100,12 @@ fun ExecutionCenterSection(
                 WovenNetBackground(modifier = Modifier.matchParentSize())
 
                 Column(modifier = Modifier.padding(20.dp)) {
-                    // Header Row (Clickable to Expand / Collapse without ripple hover effect)
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clickable(
-                                interactionSource = remember { MutableInteractionSource() },
-                                indication = null
-                            ) { isExpanded = !isExpanded }
-                            .padding(vertical = 4.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier.weight(1f).padding(end = 12.dp)
-                        ) {
-                            Box(
-                                modifier = Modifier
-                                    .size(42.dp)
-                                    .clip(RoundedCornerShape(12.dp))
-                                    .background(Color(0xFFF59E0B).copy(alpha = 0.14f))
-                                    .border(1.dp, Color(0xFFF59E0B).copy(alpha = 0.28f), RoundedCornerShape(12.dp)),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Icon(
-                                    Icons.Default.Terminal,
-                                    contentDescription = null,
-                                    tint = Color(0xFFFBBF24),
-                                    modifier = Modifier.size(20.dp)
-                                )
-                            }
-                            Spacer(modifier = Modifier.width(14.dp))
-                            Column(modifier = Modifier.weight(1f)) {
-                                Text(
-                                    "Command Execution Center",
-                                    color = Color.White,
-                                    fontWeight = FontWeight.SemiBold,
-                                    fontSize = 15.5.sp
-                                )
-                                Spacer(modifier = Modifier.height(2.dp))
-                                Text(
-                                    if (isExpanded) "Tap to collapse options" else "Manage individual optimization commands",
-                                    color = Color.White.copy(alpha = 0.6f),
-                                    fontSize = 12.5.sp
-                                )
-                            }
-                        }
+                    ExecutionCenterHeader(
+                        isExpanded = isExpanded,
+                        chevronRotation = chevronRotation,
+                        onToggleExpand = { isExpanded = !isExpanded }
+                    )
 
-                        Icon(
-                            imageVector = Icons.Default.KeyboardArrowDown,
-                            contentDescription = if (isExpanded) "Collapse" else "Expand",
-                            tint = Color.White.copy(alpha = 0.7f),
-                            modifier = Modifier
-                                .size(24.dp)
-                                .rotate(chevronRotation)
-                        )
-                    }
-
-                    // Collapsible Content
                     AnimatedVisibility(
                         visible = isExpanded,
                         enter = fadeIn() + expandVertically(),
@@ -153,113 +117,335 @@ fun ExecutionCenterSection(
                                 modifier = Modifier.padding(bottom = 16.dp)
                             )
 
-                            Text(
-                                text = "Configure which system overrides execute during Gaming Mode activation. Safety overrides are enabled by default.",
-                                color = Color.Gray,
-                                fontSize = 12.sp,
-                                lineHeight = 17.sp,
-                                modifier = Modifier.padding(bottom = 14.dp)
+                            ExecutionTabBar(
+                                tabs = availableTabs,
+                                selectedTab = state.selectedExecutionTab,
+                                onSelectTab = { onEvent(AboutUiEvent.SelectExecutionCenterTab(it)) }
                             )
 
-                            // Thermal Throttling Command Card
-                            Card(
-                                shape = RoundedCornerShape(16.dp),
-                                colors = CardDefaults.cardColors(
-                                    containerColor = Color(0xFF14141E)
-                                ),
-                                border = BorderStroke(
-                                    1.dp,
-                                    if (disableThermalThrottling) Color(0xFFEF4444).copy(alpha = 0.4f)
-                                    else Color.White.copy(alpha = 0.06f)
-                                ),
-                                modifier = Modifier.fillMaxWidth()
-                            ) {
-                                Column(modifier = Modifier.padding(16.dp)) {
-                                    Row(
-                                        modifier = Modifier.fillMaxWidth(),
-                                        verticalAlignment = Alignment.CenterVertically,
-                                        horizontalArrangement = Arrangement.SpaceBetween
-                                    ) {
-                                        Row(
-                                            verticalAlignment = Alignment.CenterVertically,
-                                            modifier = Modifier.weight(1f).padding(end = 12.dp)
-                                        ) {
-                                            Icon(
-                                                imageVector = Icons.Default.Thermostat,
-                                                contentDescription = null,
-                                                tint = if (disableThermalThrottling) Color(0xFFEF4444) else Color(0xFF10B981),
-                                                modifier = Modifier.size(20.dp)
-                                            )
-                                            Spacer(modifier = Modifier.width(10.dp))
-                                            Column {
-                                                Text(
-                                                    text = "Bypass Thermal Throttling",
-                                                    color = Color.White,
-                                                    fontWeight = FontWeight.Bold,
-                                                    fontSize = 14.sp
-                                                )
-                                                Text(
-                                                    text = if (disableThermalThrottling) "Override Active (Aggressive)" else "Safe Mode (Protected)",
-                                                    color = if (disableThermalThrottling) Color(0xFFEF4444) else Color(0xFF10B981),
-                                                    fontWeight = FontWeight.SemiBold,
-                                                    fontSize = 11.5.sp
-                                                )
-                                            }
-                                        }
+                            Spacer(modifier = Modifier.height(16.dp))
 
-                                        Switch(
-                                            checked = disableThermalThrottling,
-                                            onCheckedChange = onToggleDisableThermalThrottling,
-                                            colors = SwitchDefaults.colors(
-                                                checkedThumbColor = Color.White,
-                                                checkedTrackColor = Color(0xFFEF4444),
-                                                uncheckedThumbColor = Color.Gray,
-                                                uncheckedTrackColor = Color(0xFF272730)
-                                            )
-                                        )
-                                    }
-
-                                    Spacer(modifier = Modifier.height(10.dp))
-
-                                    Text(
-                                        text = "• Universal: 'cmd thermalservice override-status 0'\n• Vivo/iQOO: Disables 'game_cube_temper_control'",
-                                        fontFamily = FontFamily.Monospace,
-                                        fontSize = 10.5.sp,
-                                        color = Color.White.copy(alpha = 0.5f),
-                                        lineHeight = 15.sp
-                                    )
-
-                                    Spacer(modifier = Modifier.height(8.dp))
-
-                                    Row(
-                                        verticalAlignment = Alignment.Top,
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .background(
-                                                Color(0xFFEF4444).copy(alpha = 0.08f),
-                                                RoundedCornerShape(8.dp)
-                                            )
-                                            .padding(8.dp)
-                                    ) {
-                                        Icon(
-                                            Icons.Default.WarningAmber,
-                                            contentDescription = null,
-                                            tint = Color(0xFFF87171),
-                                            modifier = Modifier.size(14.dp).padding(top = 1.dp)
-                                        )
-                                        Spacer(modifier = Modifier.width(6.dp))
-                                        Text(
-                                            text = "Bypassing thermal safety prevents CPU/GPU downclocking during heat buildup, which can increase device temperature and long-term hardware wear.",
-                                            color = Color(0xFFFCA5A5),
-                                            fontSize = 11.sp,
-                                            lineHeight = 15.sp
-                                        )
-                                    }
-                                }
+                            when (state.selectedExecutionTab) {
+                                ExecutionCenterTab.COMMON -> CommonCommandsTab(state, onEvent)
+                                ExecutionCenterTab.GENERIC -> GenericCommandsTab(state, onEvent)
+                                ExecutionCenterTab.VIVO -> VivoCommandsTab(state, onEvent)
                             }
                         }
                     }
                 }
+            }
+        }
+    }
+}
+
+@Composable
+private fun ExecutionCenterHeader(
+    isExpanded: Boolean,
+    chevronRotation: Float,
+    onToggleExpand: () -> Unit
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(
+                interactionSource = remember { MutableInteractionSource() },
+                indication = null
+            ) { onToggleExpand() }
+            .padding(vertical = 4.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.weight(1f).padding(end = 12.dp)
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(42.dp)
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(Color(0xFFF59E0B).copy(alpha = 0.14f))
+                    .border(1.dp, Color(0xFFF59E0B).copy(alpha = 0.28f), RoundedCornerShape(12.dp)),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Terminal,
+                    contentDescription = null,
+                    tint = Color(0xFFFBBF24),
+                    modifier = Modifier.size(20.dp)
+                )
+            }
+            Spacer(modifier = Modifier.width(14.dp))
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = "Command Execution Center",
+                    color = Color.White,
+                    fontWeight = FontWeight.SemiBold,
+                    fontSize = 15.5.sp
+                )
+                Spacer(modifier = Modifier.height(2.dp))
+                Text(
+                    text = if (isExpanded) "Tap to collapse options" else "Manage individual optimization commands",
+                    color = Color.White.copy(alpha = 0.6f),
+                    fontSize = 12.5.sp
+                )
+            }
+        }
+
+        Icon(
+            imageVector = Icons.Default.KeyboardArrowDown,
+            contentDescription = if (isExpanded) "Collapse" else "Expand",
+            tint = Color.White.copy(alpha = 0.7f),
+            modifier = Modifier
+                .size(24.dp)
+                .rotate(chevronRotation)
+        )
+    }
+}
+
+@Composable
+private fun ExecutionTabBar(
+    tabs: List<ExecutionCenterTab>,
+    selectedTab: ExecutionCenterTab,
+    onSelectTab: (ExecutionCenterTab) -> Unit
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(12.dp))
+            .background(Color(0xFF0F0F16))
+            .padding(4.dp),
+        horizontalArrangement = Arrangement.spacedBy(4.dp)
+    ) {
+        tabs.forEach { tab ->
+            val isSelected = tab == selectedTab || (!tabs.contains(selectedTab) && tab == ExecutionCenterTab.COMMON)
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .clip(RoundedCornerShape(8.dp))
+                    .background(
+                        if (isSelected) Color(0xFF272738)
+                        else Color.Transparent
+                    )
+                    .clickable { onSelectTab(tab) }
+                    .padding(vertical = 8.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = tab.label,
+                    fontSize = 12.sp,
+                    fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
+                    color = if (isSelected) Color.White else Color.White.copy(alpha = 0.5f)
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun CommonCommandsTab(
+    state: AboutUiState,
+    onEvent: (AboutUiEvent) -> Unit
+) {
+    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        CommandToggleCard(
+            title = "Bypass Thermal Throttling",
+            commandSummary = "• Universal: 'cmd thermalservice override-status 0'\n• Vivo/iQOO: Disables 'game_cube_temper_control'",
+            statusText = if (state.disableThermalThrottling) "Override Active (Aggressive)" else "Safe Mode (Protected)",
+            statusColor = if (state.disableThermalThrottling) Color(0xFFEF4444) else Color(0xFF10B981),
+            isChecked = state.disableThermalThrottling,
+            onCheckedChange = { onEvent(AboutUiEvent.SetDisableThermalThrottling(it)) },
+            icon = Icons.Default.Thermostat,
+            warningText = "Bypassing thermal safety prevents CPU/GPU downclocking during heat buildup, which can increase device temperature and long-term hardware wear."
+        )
+
+        CommandToggleCard(
+            title = "RAM Cache Pre-Trimming",
+            commandSummary = "• Universal: 'am trim-memory <pkg> RUNNING_CRITICAL'\n• Halts background cache bloat before match render loop",
+            statusText = if (state.ramCachePreTrimEnabled) "Pre-Trim Active" else "Trim Skipped",
+            statusColor = if (state.ramCachePreTrimEnabled) Color(0xFF10B981) else Color.Gray,
+            isChecked = state.ramCachePreTrimEnabled,
+            onCheckedChange = { onEvent(AboutUiEvent.SetRamCachePreTrim(it)) },
+            icon = Icons.Default.Memory
+        )
+
+        ExperimentalSectionDivider(
+            description = "Low-level system and cgroup overrides. Safe for standard operation."
+        )
+
+        CommandToggleCard(
+            title = "Disable Phantom Process Killer",
+            commandSummary = "• Universal: 'device_config put activity_manager max_phantom_processes 2147483647'\n• Disables 32 child process limit for game engines",
+            statusText = if (state.disablePhantomProcKiller) "PPK Disabled (Max Limit)" else "AOSP Default (32 Procs)",
+            statusColor = if (state.disablePhantomProcKiller) Color(0xFF10B981) else Color.Gray,
+            isChecked = state.disablePhantomProcKiller,
+            onCheckedChange = { onEvent(AboutUiEvent.SetDisablePhantomProcKiller(it)) },
+            icon = Icons.Default.Security
+        )
+
+        CommandToggleCard(
+            title = "Cgroup CPU Priority Lock",
+            commandSummary = "• Universal: 'cmd activity set-bg-restriction-level <pkg> unrestricted'\n• Locks game process to top-app cpusets & prevents down-migration",
+            statusText = if (state.cpuPriorityLock) "Top-App Cpuset Locked" else "Standard Priority",
+            statusColor = if (state.cpuPriorityLock) Color(0xFF10B981) else Color.Gray,
+            isChecked = state.cpuPriorityLock,
+            onCheckedChange = { onEvent(AboutUiEvent.SetCpuPriorityLock(it)) },
+            icon = Icons.Default.Speed
+        )
+    }
+}
+
+@Composable
+private fun GenericCommandsTab(
+    state: AboutUiState,
+    onEvent: (AboutUiEvent) -> Unit
+) {
+    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        CommandToggleCard(
+            title = "Fixed Performance Governor",
+            commandSummary = "• Universal: 'cmd performance_hint set-fixed-performance-mode-enabled true'\n• Disables dynamic frequency scaling on supported devices",
+            statusText = if (state.fixedPerformanceMode) "Fixed Mode Active" else "Default Dynamic Scaling",
+            statusColor = if (state.fixedPerformanceMode) Color(0xFFF59E0B) else Color.Gray,
+            isChecked = state.fixedPerformanceMode,
+            onCheckedChange = { onEvent(AboutUiEvent.SetFixedPerformanceMode(it)) },
+            icon = Icons.Default.Bolt
+        )
+
+        CommandToggleCard(
+            title = "Network & Doze Firewall",
+            commandSummary = "• Universal: 'dumpsys deviceidle whitelist +<pkg>'\n• Grants network and sleep immunity to active match package",
+            statusText = if (state.networkFirewall) "Doze Whitelist Active" else "Default Network Rules",
+            statusColor = if (state.networkFirewall) Color(0xFF10B981) else Color.Gray,
+            isChecked = state.networkFirewall,
+            onCheckedChange = { onEvent(AboutUiEvent.SetNetworkFirewall(it)) },
+            icon = Icons.Default.Wifi
+        )
+
+        CommandToggleCard(
+            title = "Peak Refresh Rate Lock",
+            commandSummary = "• Universal: 'settings put system peak_refresh_rate / min_refresh_rate'\n• Locks framework refresh rate floor and ceiling to highest display mode",
+            statusText = if (state.refreshRateLock) "Display Mode Pinned" else "Adaptive Refresh Rate",
+            statusColor = if (state.refreshRateLock) Color(0xFF10B981) else Color.Gray,
+            isChecked = state.refreshRateLock,
+            onCheckedChange = { onEvent(AboutUiEvent.SetRefreshRateLock(it)) },
+            icon = Icons.Default.Refresh
+        )
+
+        CommandToggleCard(
+            title = "Touch Response Boost",
+            commandSummary = "• Universal: 'settings put secure/system touch_response_boost / touch_smooth'\n• Minimizes touch latency and optimizes digitizer dispatch",
+            statusText = if (state.touchBoost) "Low Latency Touch" else "Default Touch Filtering",
+            statusColor = if (state.touchBoost) Color(0xFF10B981) else Color.Gray,
+            isChecked = state.touchBoost,
+            onCheckedChange = { onEvent(AboutUiEvent.SetTouchBoost(it)) },
+            icon = Icons.Default.TouchApp
+        )
+    }
+}
+
+@Composable
+private fun VivoCommandsTab(
+    state: AboutUiState,
+    onEvent: (AboutUiEvent) -> Unit
+) {
+    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        CommandToggleCard(
+            title = "Monster Mode & BBK HAL State",
+            commandSummary = "• System Property Power Mode: 5 (True Monster)\n• Settings Global: bbb_perf_mode = 1 (vivo-vperf-hal)",
+            footnoteText = "Activate if your device is Vivo. Most iQOO devices already provide native Monster Mode in system settings.",
+            statusText = if (state.vivoMonsterMode) "Monster Mode 5 Active" else "Standard Power Mode",
+            statusColor = if (state.vivoMonsterMode) Color(0xFFF59E0B) else Color.Gray,
+            isChecked = state.vivoMonsterMode,
+            onCheckedChange = { onEvent(AboutUiEvent.SetVivoMonsterMode(it)) },
+            icon = Icons.Default.Bolt
+        )
+
+        CommandToggleCard(
+            title = "GameCube VIP Thread Scheduler",
+            commandSummary = "• Settings Global: game_cube_vip_thread = 1\n• RMServerExtension prioritizes RenderThread to Prime Core",
+            statusText = if (state.vivoVipThread) "VIP Scheduling Active" else "Standard Scheduler",
+            statusColor = if (state.vivoVipThread) Color(0xFF10B981) else Color.Gray,
+            isChecked = state.vivoVipThread,
+            onCheckedChange = { onEvent(AboutUiEvent.SetVivoVipThread(it)) },
+            icon = Icons.Default.Speed
+        )
+
+        CommandToggleCard(
+            title = "Live Target FPS Handshake",
+            commandSummary = "• Settings System: sdk_game_target_fps & sdk_game_scene\n• Real-time match PID handshake with GameManagerService",
+            statusText = if (state.vivoGameHandshake) "Target FPS Handshake Active" else "Handshake Inactive",
+            statusColor = if (state.vivoGameHandshake) Color(0xFF10B981) else Color.Gray,
+            isChecked = state.vivoGameHandshake,
+            onCheckedChange = { onEvent(AboutUiEvent.SetVivoGameHandshake(it)) },
+            icon = Icons.Default.SportsEsports
+        )
+
+        CommandToggleCard(
+            title = "Sensor HAL Gyroscope Delay",
+            commandSummary = "• Settings System: vivo_game_gyro_dealy_promotion (#2 Lowest)\n• vivo_game_gyro_anti_shake_promotion (#1 Recoil Smoothing)",
+            statusText = if (state.vivoGyroPromotion) "Level 2 Low Latency Active" else "Standard Gyro Delay",
+            statusColor = if (state.vivoGyroPromotion) Color(0xFF10B981) else Color.Gray,
+            isChecked = state.vivoGyroPromotion,
+            onCheckedChange = { onEvent(AboutUiEvent.SetVivoGyroPromotion(it)) },
+            icon = Icons.Default.ScreenRotation
+        )
+
+        CommandToggleCard(
+            title = "Touch Latency & 180Hz Sampling",
+            commandSummary = "• Settings System: touch_smooth 0, vivo_game_click_delay_promotion\n• Settings Global: game_memc_request_touch_rate = 180",
+            statusText = if (state.vivoTouchOptimization) "Raw Digitizer Polling Active" else "Standard Touch Polling",
+            statusColor = if (state.vivoTouchOptimization) Color(0xFF10B981) else Color.Gray,
+            isChecked = state.vivoTouchOptimization,
+            onCheckedChange = { onEvent(AboutUiEvent.SetVivoTouchOptimization(it)) },
+            icon = Icons.Default.TouchApp
+        )
+
+        ExperimentalSectionDivider(
+            description = "Advanced display arbitration and periodic maintenance loop controls."
+        )
+
+        CommandToggleCard(
+            title = "144Hz Frame Interpolation Unlock",
+            commandSummary = "• Settings System: gamecube_frame_interpolation_for_sr = 1:1:1:72:144\n• OriginOS 6 144Hz MEMC override (replaces 90 FPS cap)",
+            statusText = if (state.vivo144FpsUnlock) "144Hz MEMC Override Active" else "Default Refresh Arbitration",
+            statusColor = if (state.vivo144FpsUnlock) Color(0xFF4FDCB8) else Color.Gray,
+            isChecked = state.vivo144FpsUnlock,
+            onCheckedChange = { onEvent(AboutUiEvent.SetVivo144FpsUnlock(it)) },
+            icon = Icons.Default.Refresh
+        )
+
+        CommandToggleCard(
+            title = "2-Minute Maintenance Pulse",
+            commandSummary = "2-minute periodic maintenance pulses these 3 commands. Experiment with these toggles if encountering display arbitration or refresh rate lock issues.",
+            statusText = if (state.vivoMaintenancePulse) "2-Min Pulse Active" else "Pulse Disabled (Single Shot)",
+            statusColor = if (state.vivoMaintenancePulse) Color(0xFF10B981) else Color.Gray,
+            isChecked = state.vivoMaintenancePulse,
+            onCheckedChange = { onEvent(AboutUiEvent.SetVivoMaintenancePulse(it)) },
+            icon = Icons.Default.Timer
+        ) {
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                ChildCommandToggleRow(
+                    title = "game_plus_mode_key",
+                    commandSummary = "• Monster+ Display Render Manager",
+                    isChecked = state.vivoPulseGamePlusMode,
+                    enabled = state.vivoMaintenancePulse,
+                    onCheckedChange = { onEvent(AboutUiEvent.SetVivoPulseGamePlusMode(it)) }
+                )
+
+                ChildCommandToggleRow(
+                    title = "game_standard_promotion_mode",
+                    commandSummary = "• Panel High-Refresh Promotion",
+                    isChecked = state.vivoPulseStandardPromotion,
+                    enabled = state.vivoMaintenancePulse,
+                    onCheckedChange = { onEvent(AboutUiEvent.SetVivoPulseStandardPromotion(it)) }
+                )
+
+                ChildCommandToggleRow(
+                    title = "game_scene_more_fps",
+                    commandSummary = "• 3D Match Scene Frame Unlock",
+                    isChecked = state.vivoPulseSceneMoreFps,
+                    enabled = state.vivoMaintenancePulse,
+                    onCheckedChange = { onEvent(AboutUiEvent.SetVivoPulseSceneMoreFps(it)) }
+                )
             }
         }
     }

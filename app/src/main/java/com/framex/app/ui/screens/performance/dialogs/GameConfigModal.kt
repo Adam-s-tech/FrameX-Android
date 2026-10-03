@@ -34,11 +34,7 @@ fun GameConfigModal(
     getGameConfigBoostRam: (String) -> Boolean,
     setGameConfigBoostRam: (String, Boolean) -> Unit,
     onBoostClicked: (String) -> Unit,
-    onDismiss: () -> Unit,
-    isVivo: Boolean = false,
-    maxRefreshRate: Int = 120,
-    getGameConfigMemc: (String) -> Boolean = { false },
-    onToggleMemc: ((String, Boolean, (Boolean) -> Unit) -> Unit)? = null
+    onDismiss: () -> Unit
 ) {
     val context = LocalContext.current
     val app = remember(pkg, userApps) {
@@ -166,56 +162,7 @@ fun GameConfigModal(
                     )
                 }
 
-                if (isVivo) {
-                    var memcEnabled by remember(pkg) { mutableStateOf(getGameConfigMemc(pkg)) }
-
-                    Spacer(modifier = Modifier.height(12.dp))
-                    Text(
-                        "VIVO HARDWARE SUITE",
-                        style = MaterialTheme.typography.labelSmall,
-                        color = Color.Cyan
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-
-                    // MEMC Frame Generation
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 6.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Column(modifier = Modifier.weight(1f)) {
-                            Text(
-                                "MEMC ${maxRefreshRate} FPS Target",
-                                color = Color.White,
-                                fontWeight = FontWeight.SemiBold,
-                                fontSize = 13.sp
-                            )
-                            Text(
-                                "Hardware IC 60->${maxRefreshRate} FPS interpolation",
-                                color = Color.Gray,
-                                fontSize = 11.sp
-                            )
-                        }
-                        Switch(
-                            checked = memcEnabled,
-                            onCheckedChange = { checked ->
-                                memcEnabled = checked
-                                onToggleMemc?.invoke(pkg, checked) { success ->
-                                    if (!success) {
-                                        memcEnabled = !checked
-                                    }
-                                }
-                            },
-                            colors = SwitchDefaults.colors(
-                                checkedThumbColor = Color.White,
-                                checkedTrackColor = Color.Cyan
-                            )
-                        )
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(20.dp))
 
                 Button(
                     onClick = {

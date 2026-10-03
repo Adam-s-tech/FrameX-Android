@@ -53,7 +53,6 @@ fun PerformanceScreen(
     onEvent: (PerformanceUiEvent) -> Unit,
     getGameConfigBoostRam: (String) -> Boolean,
     setGameConfigBoostRam: (String, Boolean) -> Unit,
-    getGameConfigMemc: (String) -> Boolean,
     onNavigateBack: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -286,15 +285,11 @@ fun PerformanceScreen(
                 userApps = uiState.userApps,
                 getGameConfigBoostRam = getGameConfigBoostRam,
                 setGameConfigBoostRam = setGameConfigBoostRam,
-                getGameConfigMemc = getGameConfigMemc,
-                maxRefreshRate = uiState.maxRefreshRate,
                 onBoostClicked = { tPkg ->
                     onEvent(PerformanceUiEvent.SetConfigGamePkg(null))
                     onEvent(PerformanceUiEvent.SetDeployingGamePkg(tPkg))
                 },
-                onDismiss = { onEvent(PerformanceUiEvent.SetConfigGamePkg(null)) },
-                isVivo = uiState.isVivoSuiteEnabled,
-                onToggleMemc = { p, v, cb -> onEvent(PerformanceUiEvent.ToggleMemc(p, v, cb)) }
+                onDismiss = { onEvent(PerformanceUiEvent.SetConfigGamePkg(null)) }
             )
         }
 

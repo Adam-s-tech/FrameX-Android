@@ -5,6 +5,12 @@ import com.framex.app.update.AppUpdateInfo
 import com.framex.app.update.DownloadState
 import java.io.File
 
+enum class ExecutionCenterTab(val label: String) {
+    COMMON("Common"),
+    GENERIC("Generic"),
+    VIVO("Vivo / iQOO")
+}
+
 @Immutable
 data class AboutUiState(
     val versionName: String = "",
@@ -18,7 +24,25 @@ data class AboutUiState(
     val isVivoDevice: Boolean = false,
     val isVivoOptActive: Boolean = false,
     val showVivoDiagModal: Boolean = false,
+    val selectedExecutionTab: ExecutionCenterTab = ExecutionCenterTab.COMMON,
     val disableThermalThrottling: Boolean = false,
+    val ramCachePreTrimEnabled: Boolean = true,
+    val disablePhantomProcKiller: Boolean = true,
+    val cpuPriorityLock: Boolean = true,
+    val fixedPerformanceMode: Boolean = false,
+    val networkFirewall: Boolean = false,
+    val refreshRateLock: Boolean = false,
+    val touchBoost: Boolean = false,
+    val vivoMonsterMode: Boolean = false,
+    val vivoVipThread: Boolean = false,
+    val vivoGameHandshake: Boolean = false,
+    val vivoGyroPromotion: Boolean = false,
+    val vivoTouchOptimization: Boolean = false,
+    val vivo144FpsUnlock: Boolean = false,
+    val vivoMaintenancePulse: Boolean = false,
+    val vivoPulseGamePlusMode: Boolean = false,
+    val vivoPulseStandardPromotion: Boolean = false,
+    val vivoPulseSceneMoreFps: Boolean = false,
     val hasCrashLog: Boolean = false,
     val pendingInstallApk: File? = null,
     val waitingForInstallPermission: Boolean = false
@@ -29,7 +53,25 @@ sealed interface AboutUiEvent {
     data object CheckForUpdates : AboutUiEvent
     data class SetVivoOptEnabled(val enabled: Boolean) : AboutUiEvent
     data class SetShowVivoDiagModal(val show: Boolean) : AboutUiEvent
+    data class SelectExecutionCenterTab(val tab: ExecutionCenterTab) : AboutUiEvent
     data class SetDisableThermalThrottling(val enabled: Boolean) : AboutUiEvent
+    data class SetRamCachePreTrim(val enabled: Boolean) : AboutUiEvent
+    data class SetDisablePhantomProcKiller(val enabled: Boolean) : AboutUiEvent
+    data class SetCpuPriorityLock(val enabled: Boolean) : AboutUiEvent
+    data class SetFixedPerformanceMode(val enabled: Boolean) : AboutUiEvent
+    data class SetNetworkFirewall(val enabled: Boolean) : AboutUiEvent
+    data class SetRefreshRateLock(val enabled: Boolean) : AboutUiEvent
+    data class SetTouchBoost(val enabled: Boolean) : AboutUiEvent
+    data class SetVivoMonsterMode(val enabled: Boolean) : AboutUiEvent
+    data class SetVivoVipThread(val enabled: Boolean) : AboutUiEvent
+    data class SetVivoGameHandshake(val enabled: Boolean) : AboutUiEvent
+    data class SetVivoGyroPromotion(val enabled: Boolean) : AboutUiEvent
+    data class SetVivoTouchOptimization(val enabled: Boolean) : AboutUiEvent
+    data class SetVivo144FpsUnlock(val enabled: Boolean) : AboutUiEvent
+    data class SetVivoMaintenancePulse(val enabled: Boolean) : AboutUiEvent
+    data class SetVivoPulseGamePlusMode(val enabled: Boolean) : AboutUiEvent
+    data class SetVivoPulseStandardPromotion(val enabled: Boolean) : AboutUiEvent
+    data class SetVivoPulseSceneMoreFps(val enabled: Boolean) : AboutUiEvent
     data object ShareCrashLog : AboutUiEvent
     data object ClearCrashLog : AboutUiEvent
     data class SetUpdateInfo(val info: AppUpdateInfo?) : AboutUiEvent

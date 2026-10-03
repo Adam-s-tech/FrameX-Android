@@ -322,13 +322,13 @@ class SettingsRepository @Inject constructor(
     private val _cpuPriorityLock = MutableStateFlow(prefs.getBoolean(KEY_CPU_PRIORITY_LOCK, true))
     val cpuPriorityLock: StateFlow<Boolean> = _cpuPriorityLock.asStateFlow()
 
-    private val _networkFirewall = MutableStateFlow(prefs.getBoolean(KEY_NETWORK_FIREWALL, true))
+    private val _networkFirewall = MutableStateFlow(prefs.getBoolean(KEY_NETWORK_FIREWALL, false))
     val networkFirewall: StateFlow<Boolean> = _networkFirewall.asStateFlow()
 
-    private val _refreshRateLock = MutableStateFlow(prefs.getBoolean(KEY_REFRESH_RATE_LOCK, true))
+    private val _refreshRateLock = MutableStateFlow(prefs.getBoolean(KEY_REFRESH_RATE_LOCK, false))
     val refreshRateLock: StateFlow<Boolean> = _refreshRateLock.asStateFlow()
 
-    private val _touchBoost = MutableStateFlow(prefs.getBoolean(KEY_TOUCH_BOOST, true))
+    private val _touchBoost = MutableStateFlow(prefs.getBoolean(KEY_TOUCH_BOOST, false))
     val touchBoost: StateFlow<Boolean> = _touchBoost.asStateFlow()
 
     private val _framePacingOverlay = MutableStateFlow(prefs.getBoolean(KEY_FRAME_PACING_OVERLAY, false))
@@ -394,6 +394,102 @@ class SettingsRepository @Inject constructor(
     fun setDisableThermalThrottling(enabled: Boolean) {
         prefs.edit().putBoolean(KEY_DISABLE_THERMAL_THROTTLING, enabled).apply()
         _disableThermalThrottling.value = enabled
+    }
+
+    private val _ramCachePreTrimEnabled = MutableStateFlow(prefs.getBoolean(KEY_RAM_CACHE_PRE_TRIM_ENABLED, true))
+    val ramCachePreTrimEnabled: StateFlow<Boolean> = _ramCachePreTrimEnabled.asStateFlow()
+
+    fun setRamCachePreTrimEnabled(enabled: Boolean) {
+        prefs.edit().putBoolean(KEY_RAM_CACHE_PRE_TRIM_ENABLED, enabled).apply()
+        _ramCachePreTrimEnabled.value = enabled
+    }
+
+    private val _disablePhantomProcKiller = MutableStateFlow(prefs.getBoolean(KEY_DISABLE_PHANTOM_PROC_KILLER, true))
+    val disablePhantomProcKiller: StateFlow<Boolean> = _disablePhantomProcKiller.asStateFlow()
+
+    fun setDisablePhantomProcKiller(enabled: Boolean) {
+        prefs.edit().putBoolean(KEY_DISABLE_PHANTOM_PROC_KILLER, enabled).apply()
+        _disablePhantomProcKiller.value = enabled
+    }
+
+    private val _vivoMonsterMode = MutableStateFlow(prefs.getBoolean(KEY_VIVO_MONSTER_MODE, false))
+    val vivoMonsterMode: StateFlow<Boolean> = _vivoMonsterMode.asStateFlow()
+
+    fun setVivoMonsterMode(enabled: Boolean) {
+        prefs.edit().putBoolean(KEY_VIVO_MONSTER_MODE, enabled).apply()
+        _vivoMonsterMode.value = enabled
+    }
+
+    private val _vivoVipThread = MutableStateFlow(prefs.getBoolean(KEY_VIVO_VIP_THREAD, false))
+    val vivoVipThread: StateFlow<Boolean> = _vivoVipThread.asStateFlow()
+
+    fun setVivoVipThread(enabled: Boolean) {
+        prefs.edit().putBoolean(KEY_VIVO_VIP_THREAD, enabled).apply()
+        _vivoVipThread.value = enabled
+    }
+
+    private val _vivoGameHandshake = MutableStateFlow(prefs.getBoolean(KEY_VIVO_GAME_HANDSHAKE, false))
+    val vivoGameHandshake: StateFlow<Boolean> = _vivoGameHandshake.asStateFlow()
+
+    fun setVivoGameHandshake(enabled: Boolean) {
+        prefs.edit().putBoolean(KEY_VIVO_GAME_HANDSHAKE, enabled).apply()
+        _vivoGameHandshake.value = enabled
+    }
+
+    private val _vivoGyroPromotion = MutableStateFlow(prefs.getBoolean(KEY_VIVO_GYRO_PROMOTION, false))
+    val vivoGyroPromotion: StateFlow<Boolean> = _vivoGyroPromotion.asStateFlow()
+
+    fun setVivoGyroPromotion(enabled: Boolean) {
+        prefs.edit().putBoolean(KEY_VIVO_GYRO_PROMOTION, enabled).apply()
+        _vivoGyroPromotion.value = enabled
+    }
+
+    private val _vivoTouchOptimization = MutableStateFlow(prefs.getBoolean(KEY_VIVO_TOUCH_OPTIMIZATION, false))
+    val vivoTouchOptimization: StateFlow<Boolean> = _vivoTouchOptimization.asStateFlow()
+
+    fun setVivoTouchOptimization(enabled: Boolean) {
+        prefs.edit().putBoolean(KEY_VIVO_TOUCH_OPTIMIZATION, enabled).apply()
+        _vivoTouchOptimization.value = enabled
+    }
+
+    private val _vivo144FpsUnlock = MutableStateFlow(prefs.getBoolean(KEY_VIVO_144FPS_UNLOCK, false))
+    val vivo144FpsUnlock: StateFlow<Boolean> = _vivo144FpsUnlock.asStateFlow()
+
+    fun setVivo144FpsUnlock(enabled: Boolean) {
+        prefs.edit().putBoolean(KEY_VIVO_144FPS_UNLOCK, enabled).apply()
+        _vivo144FpsUnlock.value = enabled
+    }
+
+    private val _vivoMaintenancePulse = MutableStateFlow(prefs.getBoolean(KEY_VIVO_MAINTENANCE_PULSE, false))
+    val vivoMaintenancePulse: StateFlow<Boolean> = _vivoMaintenancePulse.asStateFlow()
+
+    fun setVivoMaintenancePulse(enabled: Boolean) {
+        prefs.edit().putBoolean(KEY_VIVO_MAINTENANCE_PULSE, enabled).apply()
+        _vivoMaintenancePulse.value = enabled
+    }
+
+    private val _vivoPulseGamePlusMode = MutableStateFlow(prefs.getBoolean(KEY_VIVO_PULSE_GAME_PLUS_MODE, false))
+    val vivoPulseGamePlusMode: StateFlow<Boolean> = _vivoPulseGamePlusMode.asStateFlow()
+
+    fun setVivoPulseGamePlusMode(enabled: Boolean) {
+        prefs.edit().putBoolean(KEY_VIVO_PULSE_GAME_PLUS_MODE, enabled).apply()
+        _vivoPulseGamePlusMode.value = enabled
+    }
+
+    private val _vivoPulseStandardPromotion = MutableStateFlow(prefs.getBoolean(KEY_VIVO_PULSE_STANDARD_PROMOTION, false))
+    val vivoPulseStandardPromotion: StateFlow<Boolean> = _vivoPulseStandardPromotion.asStateFlow()
+
+    fun setVivoPulseStandardPromotion(enabled: Boolean) {
+        prefs.edit().putBoolean(KEY_VIVO_PULSE_STANDARD_PROMOTION, enabled).apply()
+        _vivoPulseStandardPromotion.value = enabled
+    }
+
+    private val _vivoPulseSceneMoreFps = MutableStateFlow(prefs.getBoolean(KEY_VIVO_PULSE_SCENE_MORE_FPS, false))
+    val vivoPulseSceneMoreFps: StateFlow<Boolean> = _vivoPulseSceneMoreFps.asStateFlow()
+
+    fun setVivoPulseSceneMoreFps(enabled: Boolean) {
+        prefs.edit().putBoolean(KEY_VIVO_PULSE_SCENE_MORE_FPS, enabled).apply()
+        _vivoPulseSceneMoreFps.value = enabled
     }
 
     private val _cpuHotWarningEnabled = MutableStateFlow(prefs.getBoolean(KEY_CPU_HOT_WARNING_ENABLED, true))
@@ -528,6 +624,18 @@ class SettingsRepository @Inject constructor(
         private const val KEY_FIXED_PERFORMANCE_MODE = "esports_fixed_performance_mode"
         private const val KEY_DEEP_FREEZE_ENABLED = "gaming_deep_freeze_enabled"
         private const val KEY_DISABLE_THERMAL_THROTTLING = "gaming_disable_thermal_throttling"
+        private const val KEY_RAM_CACHE_PRE_TRIM_ENABLED = "gaming_ram_cache_pre_trim_enabled"
+        private const val KEY_DISABLE_PHANTOM_PROC_KILLER = "gaming_disable_phantom_proc_killer"
+        private const val KEY_VIVO_MONSTER_MODE = "gaming_vivo_monster_mode"
+        private const val KEY_VIVO_VIP_THREAD = "gaming_vivo_vip_thread"
+        private const val KEY_VIVO_GAME_HANDSHAKE = "gaming_vivo_game_handshake"
+        private const val KEY_VIVO_GYRO_PROMOTION = "gaming_vivo_gyro_promotion"
+        private const val KEY_VIVO_TOUCH_OPTIMIZATION = "gaming_vivo_touch_optimization"
+        private const val KEY_VIVO_144FPS_UNLOCK = "gaming_vivo_144fps_unlock"
+        private const val KEY_VIVO_MAINTENANCE_PULSE = "gaming_vivo_maintenance_pulse"
+        private const val KEY_VIVO_PULSE_GAME_PLUS_MODE = "gaming_vivo_pulse_game_plus_mode"
+        private const val KEY_VIVO_PULSE_STANDARD_PROMOTION = "gaming_vivo_pulse_standard_promotion"
+        private const val KEY_VIVO_PULSE_SCENE_MORE_FPS = "gaming_vivo_pulse_scene_more_fps"
         private const val KEY_CPU_HOT_WARNING_ENABLED = "cpu_hot_warning_enabled"
         private const val KEY_HAS_SEEN_DEEP_FREEZE_NOTICE = "has_seen_deep_freeze_notice"
         private const val KEY_AUTO_UPDATE_CHECK_ENABLED = "auto_update_check_enabled"

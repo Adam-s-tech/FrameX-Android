@@ -352,6 +352,7 @@ class GamingModeEngine @Inject constructor(
     }
 
     private suspend fun executeRamCachePurge() {
+        if (!settingsRepository.ramCachePreTrimEnabled.value) return
         ledgerExecutor.executeBatch(
             Stage.MEMORY,
             listOf(CommandSpec("pm trim-caches 4G", OpPriority.PRIMARY))
@@ -531,9 +532,15 @@ class GamingModeEngine @Inject constructor(
             GamingPlatformPath.VIVO -> {
                 FrameXLog.i("Vivo/iQOO device detected: Applying hardware-verified Vivo gaming suite", tag = TAG)
                 val pid = activeGamePkg?.let { resolveProcessPid(it) } ?: 0
-                vivoGamingOptimizer.applyOptimizations(activeGamePkg, pid) { progress, statusText ->
+                val vivoSuccess = vivoGamingOptimizer.applyOptimizations(activeGamePkg, pid) { progress, statusText ->
                     _state.value = GamingModeState.Enabling(progress, statusText)
                 }
+                val uid = activeGamePkg?.let {
+                    runCatching { context.packageManager.getPackageUid(it, 0) }.getOrNull()
+                }
+                // Also apply any selected generic optimizations if configured by the user
+                esportsOptimizationEngine.applySelectedGenericOptimizations(activeGamePkg, uid)
+                vivoSuccess
             }
             GamingPlatformPath.GENERIC -> {
                 try {

@@ -48,7 +48,6 @@ fun PerformanceRoute(
         onEvent = viewModel::onEvent,
         getGameConfigBoostRam = viewModel::getGameConfigBoostRam,
         setGameConfigBoostRam = viewModel::setGameConfigBoostRam,
-        getGameConfigMemc = viewModel::getGameConfigMemc,
         onNavigateBack = onNavigateBack,
         modifier = modifier
     )

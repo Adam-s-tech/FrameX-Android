@@ -198,18 +198,21 @@ private fun StageChildrenSection(
     modifier: Modifier = Modifier
 ) {
     val (alwaysVisibleOps, collapsibleDetailOps) = remember(stageSummary) {
-        val primaryList = if (stageSummary.primaryOps.isNotEmpty()) {
-            stageSummary.primaryOps
+        val nonSkippedPrimary = stageSummary.primaryOps.filter { it.status != OpStatus.SKIPPED }
+        val nonSkippedDetail = stageSummary.detailOps.filter { it.status != OpStatus.SKIPPED }
+
+        val primaryList = if (nonSkippedPrimary.isNotEmpty()) {
+            nonSkippedPrimary
         } else {
-            stageSummary.detailOps.take(1)
+            nonSkippedDetail.take(1)
         }
-        val detailList = if (stageSummary.primaryOps.isNotEmpty()) {
-            stageSummary.detailOps
+        val detailList = if (nonSkippedPrimary.isNotEmpty()) {
+            nonSkippedDetail
         } else {
-            stageSummary.detailOps.drop(1)
+            nonSkippedDetail.drop(1)
         }
         val alwaysVisibleDetails = detailList.filter {
-            it.status == OpStatus.FAILED || it.status == OpStatus.SKIPPED
+            it.status == OpStatus.FAILED
         }
         val collapsibleDetails = detailList.filter {
             it.status == OpStatus.APPLIED

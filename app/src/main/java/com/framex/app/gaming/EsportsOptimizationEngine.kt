@@ -174,13 +174,25 @@ class EsportsOptimizationEngine @Inject constructor(
     // Granular Optimization Steps (IDE & GitHub Symbol Navigation)
     // =========================================================================
 
+    suspend fun applySelectedGenericOptimizations(packageName: String?, uid: Int?) {
+        if (!isShizukuReady()) return
+        applyPerformanceGovernor()
+        applyDisplayRefreshRate()
+        applyTouchResponseLatency()
+        applyNetworkAndDozeExemptions(packageName, uid)
+    }
+
     private suspend fun applyMemoryAndThermalOptimizations() {
         val memSpecs = listOf(
             CommandSpec("pm trim-caches 4G", OpPriority.PRIMARY),
             CommandSpec("am compact background", OpPriority.DETAIL),
             CommandSpec("cmd pinner repin /system/framework/framework.jar", OpPriority.DETAIL)
         )
-        ledgerExecutor.executeBatch(Stage.MEMORY, memSpecs)
+        if (settingsRepository.ramCachePreTrimEnabled.value) {
+            ledgerExecutor.executeBatch(Stage.MEMORY, memSpecs)
+        } else {
+            ledgerExecutor.recordSkipped(Stage.MEMORY, memSpecs)
+        }
 
         val powerSpecs = listOf(
             CommandSpec("cmd thermalservice override-status 0", OpPriority.PRIMARY)
