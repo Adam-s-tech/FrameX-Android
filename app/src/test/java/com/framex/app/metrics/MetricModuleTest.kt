@@ -32,7 +32,7 @@ class MetricModuleTest {
 
     @Test
     fun isIconShown_handlesDefaultAndCustomSets() {
-        assertTrue(isIconShown(emptySet(), "fps"))
+        assertFalse(isIconShown(emptySet(), "fps"))
         assertTrue(isIconShown(setOf("fps", "cpu"), "fps"))
         assertFalse(isIconShown(setOf("fps", "cpu"), "ram"))
     }

@@ -60,6 +60,8 @@ class OverlayManager @Inject constructor(
     private var composeView: ComposeView? = null
     private var overlayLifecycleOwner: OverlayLifecycleOwner? = null
     private var windowParams: WindowManager.LayoutParams? = null
+    private var dragAccumulatorX = 0f
+    private var dragAccumulatorY = 0f
 
     // Single source of truth for "is the overlay currently drawn on screen", independent of
     // whether OverlayService/its foreground notification is alive. The notification action
@@ -74,6 +76,8 @@ class OverlayManager @Inject constructor(
             return
         }
 
+        dragAccumulatorX = 0f
+        dragAccumulatorY = 0f
         metricsEngine.resetSessionTimer()
 
         FrameXLog.d("Creating new ComposeView...")
@@ -112,19 +116,31 @@ class OverlayManager @Inject constructor(
                         metricsState = metricsState,
                         onDrag = { dx, dy ->
                             windowParams?.let { p ->
-                                p.x += dx.toInt()
-                                p.y += dy.toInt()
-                                
-                                val screenSize = getScreenSize()
-                                val viewWidth = composeView?.width ?: 0
-                                val viewHeight = composeView?.height ?: 0
-                                p.x = p.x.coerceIn(0, (screenSize.x - viewWidth).coerceAtLeast(0))
-                                p.y = p.y.coerceIn(0, (screenSize.y - viewHeight).coerceAtLeast(0))
-                                
-                                composeView?.let { windowManager.updateViewLayout(it, p) }
+                                dragAccumulatorX += dx
+                                dragAccumulatorY += dy
+
+                                val moveX = dragAccumulatorX.toInt()
+                                val moveY = dragAccumulatorY.toInt()
+
+                                if (moveX != 0 || moveY != 0) {
+                                    p.x += moveX
+                                    p.y += moveY
+                                    dragAccumulatorX -= moveX
+                                    dragAccumulatorY -= moveY
+
+                                    val screenSize = getScreenSize()
+                                    val viewWidth = composeView?.width ?: 0
+                                    val viewHeight = composeView?.height ?: 0
+                                    p.x = p.x.coerceIn(0, (screenSize.x - viewWidth).coerceAtLeast(0))
+                                    p.y = p.y.coerceIn(0, (screenSize.y - viewHeight).coerceAtLeast(0))
+
+                                    composeView?.let { windowManager.updateViewLayout(it, p) }
+                                }
                             }
                         },
                         onDragEnd = {
+                            dragAccumulatorX = 0f
+                            dragAccumulatorY = 0f
                             windowParams?.let { p ->
                                 val currentOrientation = context.resources.configuration.orientation
                                 val isCurrentLandscape = currentOrientation == android.content.res.Configuration.ORIENTATION_LANDSCAPE
@@ -162,30 +178,19 @@ class OverlayManager @Inject constructor(
             val oldHeight = oldBottom - oldTop
             
             if (width > 0 && height > 0 && (width != oldWidth || height != oldHeight)) {
-                val currentOrientation = context.resources.configuration.orientation
-                val isCurrentLandscape = currentOrientation == android.content.res.Configuration.ORIENTATION_LANDSCAPE
                 val screenSize = getScreenSize()
-                val (currentX, currentY) = settingsRepository.getOverlayPosition(isCurrentLandscape)
-                
-                var targetX = currentX
-                var targetY = currentY
-                
-                if (targetX == -1 || targetY == -1) {
-                    targetX = (screenSize.x - width) / 2
-                    targetY = (screenSize.y - height) / 2
-                } else {
-                    targetX = targetX.coerceIn(0, (screenSize.x - width).coerceAtLeast(0))
-                    targetY = targetY.coerceIn(0, (screenSize.y - height).coerceAtLeast(0))
-                }
-                
                 windowParams?.let { params ->
-                    params.x = targetX
-                    params.y = targetY
-                    composeView?.let { view ->
-                        try {
-                            windowManager.updateViewLayout(view, params)
-                        } catch (e: Exception) {
-                            com.framex.app.utils.FrameXLog.e("Failed to update window layout on drag", e)
+                    val clampedX = params.x.coerceIn(0, (screenSize.x - width).coerceAtLeast(0))
+                    val clampedY = params.y.coerceIn(0, (screenSize.y - height).coerceAtLeast(0))
+                    if (clampedX != params.x || clampedY != params.y) {
+                        params.x = clampedX
+                        params.y = clampedY
+                        composeView?.let { view ->
+                            try {
+                                windowManager.updateViewLayout(view, params)
+                            } catch (e: Exception) {
+                                FrameXLog.e("Failed to update window layout bounds", e)
+                            }
                         }
                     }
                 }
@@ -221,9 +226,9 @@ class OverlayManager @Inject constructor(
         try {
             windowManager.addView(composeView, windowParams)
             _isOverlayVisible.value = true
-            com.framex.app.utils.FrameXLog.d("Overlay successfully added to WindowManager.")
+            FrameXLog.d("Overlay successfully added to WindowManager.")
         } catch (e: Exception) {
-            com.framex.app.utils.FrameXLog.e("Failed to add overlay to WindowManager: ${e.message}", e)
+            FrameXLog.e("Failed to add overlay to WindowManager: ${e.message}", e)
         }
     }
 
@@ -235,6 +240,8 @@ class OverlayManager @Inject constructor(
             overlayLifecycleOwner = null
             windowParams = null
         }
+        dragAccumulatorX = 0f
+        dragAccumulatorY = 0f
         _isOverlayVisible.value = false
         metricsEngine.resetSessionTimer()
     }
@@ -332,7 +339,8 @@ fun OverlayContent(
         modifier = Modifier
             .pointerInput(Unit) {
                 detectDragGestures(
-                    onDragEnd = { onDragEnd() }
+                    onDragEnd = { onDragEnd() },
+                    onDragCancel = { onDragEnd() }
                 ) { change, dragAmount ->
                     change.consume()
                     onDrag(dragAmount.x, dragAmount.y)

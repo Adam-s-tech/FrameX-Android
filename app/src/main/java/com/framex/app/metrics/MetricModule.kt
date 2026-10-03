@@ -99,10 +99,9 @@ val METRIC_MODULE_REGISTRY: Map<MetricModuleId, MetricModuleInfo> = listOf(
 
 /**
  * Resolves whether an icon should be shown for [storageKey].
- * If [savedIcons] is empty (fresh install or uncustomized state), all icons are shown by default.
  */
 fun isIconShown(savedIcons: Set<String>, storageKey: String): Boolean =
-    savedIcons.isEmpty() || savedIcons.contains(storageKey)
+    savedIcons.contains(storageKey)
 
 /**
  * Returns dynamic battery level icon based on charge percentage.
