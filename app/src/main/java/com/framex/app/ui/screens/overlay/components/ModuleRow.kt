@@ -4,12 +4,14 @@ import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DragIndicator
+import androidx.compose.material.icons.outlined.Visibility
+import androidx.compose.material.icons.outlined.VisibilityOff
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -23,11 +25,32 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.framex.app.R
 import com.framex.app.metrics.METRIC_MODULE_REGISTRY
+import com.framex.app.metrics.MetricModuleId
 import com.framex.app.ui.screens.overlay.ModuleRowState
 
+private fun getModuleCategoryColor(id: MetricModuleId): Color = when (id) {
+    MetricModuleId.FPS -> Color(0xFFFF334B)
+    MetricModuleId.CPU_FREQUENCY -> Color(0xFFF59E0B)
+    MetricModuleId.CPU_CLUSTERS -> Color(0xFF06B6D4)
+    MetricModuleId.RAM_USAGE -> Color(0xFF8B5CF6)
+    MetricModuleId.BATTERY_TEMPERATURE -> Color(0xFFF97316)
+    MetricModuleId.THERMAL_MONITOR -> Color(0xFFEF4444)
+    MetricModuleId.BATTERY_LEVEL -> Color(0xFF10B981)
+    MetricModuleId.CLOCK -> Color(0xFF3B82F6)
+    MetricModuleId.SESSION_TIMER -> Color(0xFF6366F1)
+    MetricModuleId.NETWORK_SPEED -> Color(0xFF14B8A6)
+    MetricModuleId.PING -> Color(0xFFEC4899)
+}
+
+/**
+ * Interactive row item for a single metric module with category-tinted squircle,
+ * title/preview values, explicit [Icon] toggle pill, enable switch, and drag handle.
+ */
 @Composable
 fun ModuleRow(
     module: ModuleRowState,
@@ -39,6 +62,7 @@ fun ModuleRow(
     dragHandleModifier: Modifier? = null
 ) {
     val info = METRIC_MODULE_REGISTRY.getValue(module.id)
+    val categoryColor = getModuleCategoryColor(module.id)
 
     val borderWidth by animateDpAsState(
         targetValue = if (isDragging) 2.dp else 1.dp,
@@ -61,81 +85,111 @@ fun ModuleRow(
             .background(MaterialTheme.colorScheme.surface)
             .then(if (isDragging) Modifier.background(accentColor.copy(alpha = 0.08f)) else Modifier)
             .border(borderWidth, borderColor, RoundedCornerShape(16.dp))
-            .padding(16.dp),
+            .padding(horizontal = 14.dp, vertical = 12.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        val isIconActive = module.showIcon
-        val iconCd = stringResource(
-            if (isIconActive) R.string.overlay_icon_enabled_cd else R.string.overlay_icon_disabled_cd
-        )
-
-        // Accessible Icon toggle button with proper Toggleable semantics
+        // Leading category squircle (pure visual icon, non-clickable)
         Box(
             modifier = Modifier
-                .size(48.dp)
-                .clip(CircleShape)
-                .background(
-                    if (isIconActive) accentColor.copy(alpha = 0.15f)
-                    else MaterialTheme.colorScheme.background
-                )
+                .size(44.dp)
+                .clip(RoundedCornerShape(12.dp))
+                .background(categoryColor.copy(alpha = 0.15f))
                 .border(
                     width = 1.dp,
-                    color = if (isIconActive) accentColor.copy(alpha = 0.4f) else Color.White.copy(0.06f),
-                    shape = CircleShape
-                )
-                .semantics {
-                    contentDescription = iconCd
-                }
-                .toggleable(
-                    value = isIconActive,
-                    role = Role.Switch,
-                    onValueChange = { onToggleIcon() }
-                )
-                .padding(12.dp),
+                    color = categoryColor.copy(alpha = 0.35f),
+                    shape = RoundedCornerShape(12.dp)
+                ),
             contentAlignment = Alignment.Center
         ) {
             Icon(
                 imageVector = info.icon,
                 contentDescription = null,
-                tint = if (isIconActive) accentColor else Color.Gray.copy(alpha = 0.6f)
+                tint = categoryColor,
+                modifier = Modifier.size(20.dp)
             )
         }
 
-        Spacer(modifier = Modifier.width(16.dp))
+        Spacer(modifier = Modifier.width(12.dp))
 
-        Column(modifier = Modifier.weight(1f)) {
+        // Title and preview sample value
+        Column(
+            modifier = Modifier.weight(1f),
+            verticalArrangement = Arrangement.Center
+        ) {
             Text(
                 text = info.displayName,
                 color = Color.White,
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold
+                style = MaterialTheme.typography.titleSmall,
+                fontWeight = FontWeight.Bold,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
             )
-            Spacer(modifier = Modifier.height(3.dp))
-            Box(
-                modifier = Modifier
-                    .clip(RoundedCornerShape(4.dp))
-                    .background(if (module.enabled) accentColor.copy(0.12f) else MaterialTheme.colorScheme.background)
-                    .padding(horizontal = 6.dp, vertical = 2.dp)
-            ) {
-                Text(
-                    text = info.previewSampleValue,
-                    color = if (module.enabled) accentColor else Color.Gray,
-                    style = MaterialTheme.typography.labelSmall
-                )
-            }
+            Spacer(modifier = Modifier.height(2.dp))
+            Text(
+                text = info.previewSampleValue,
+                color = Color(0xFF9E9E9E),
+                style = MaterialTheme.typography.bodySmall,
+                fontSize = 11.sp,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
         }
 
+        Spacer(modifier = Modifier.width(8.dp))
+
+        // Dedicated Eye Icon Toggle Button (eye when visible, crossed eye when hidden)
+        val isIconActive = module.showIcon
+        val iconCd = stringResource(
+            if (isIconActive) R.string.overlay_icon_enabled_cd else R.string.overlay_icon_disabled_cd
+        )
+
+        Box(
+            modifier = Modifier
+                .size(36.dp)
+                .clip(CircleShape)
+                .background(
+                    if (isIconActive) accentColor.copy(alpha = 0.15f)
+                    else Color(0xFF14161E)
+                )
+                .border(
+                    width = 1.dp,
+                    color = if (isIconActive) accentColor.copy(alpha = 0.45f) else Color.White.copy(alpha = 0.08f),
+                    shape = CircleShape
+                )
+                .semantics {
+                    contentDescription = iconCd
+                }
+                .clickable(
+                    role = Role.Button,
+                    onClick = onToggleIcon
+                ),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                imageVector = if (isIconActive) Icons.Outlined.Visibility else Icons.Outlined.VisibilityOff,
+                contentDescription = null,
+                tint = if (isIconActive) accentColor else Color(0xFF757575),
+                modifier = Modifier.size(16.dp)
+            )
+        }
+
+        Spacer(modifier = Modifier.width(8.dp))
+
+        // Module Enable / Disable Switch
         Switch(
             checked = module.enabled,
             onCheckedChange = onEnabledChanged,
             colors = SwitchDefaults.colors(
                 checkedThumbColor = Color.White,
-                checkedTrackColor = accentColor
+                checkedTrackColor = accentColor,
+                uncheckedTrackColor = Color(0xFF232630),
+                uncheckedThumbColor = Color.Gray
             )
         )
 
-        Spacer(modifier = Modifier.width(16.dp))
+        Spacer(modifier = Modifier.width(6.dp))
 
+        // Drag Handle
         if (dragHandleModifier != null) {
             Icon(
                 imageVector = Icons.Default.DragIndicator,

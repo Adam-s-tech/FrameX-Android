@@ -169,55 +169,13 @@ fun AppearanceScreen(
                 .navigationBarsPadding()
                 .padding(horizontal = 24.dp, vertical = 16.dp)
         ) {
-            val interactionSource = remember { MutableInteractionSource() }
-            val isPressed by interactionSource.collectIsPressedAsState()
-            val buttonScale by animateFloatAsState(
-                targetValue = if (isPressed) 0.97f else 1.0f,
-                animationSpec = spring(stiffness = 500f),
-                label = "applyButtonScale"
+            com.framex.app.ui.components.FrameXApplyButton(
+                hasChanges = hasChanges,
+                accentColor = currentAccent,
+                onClick = { onEvent(AppearanceUiEvent.SaveChanges) },
+                applyText = stringResource(R.string.appearance_apply_changes),
+                appliedText = stringResource(R.string.appearance_applied)
             )
-            val buttonContainerColor by animateColorAsState(
-                targetValue = if (hasChanges) currentAccent else Color.DarkGray.copy(alpha = 0.4f),
-                label = "applyButtonBg"
-            )
-
-            Button(
-                onClick = {
-                    if (hasChanges) {
-                        onEvent(AppearanceUiEvent.SaveChanges)
-                    }
-                },
-                enabled = hasChanges,
-                interactionSource = interactionSource,
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = buttonContainerColor,
-                    contentColor = Color.White,
-                    disabledContainerColor = Color.DarkGray.copy(alpha = 0.35f),
-                    disabledContentColor = Color.Gray
-                ),
-                shape = RoundedCornerShape(14.dp),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(56.dp)
-                    .graphicsLayer {
-                        scaleX = buttonScale
-                        scaleY = buttonScale
-                    }
-            ) {
-                AnimatedContent(
-                    targetState = hasChanges,
-                    transitionSpec = { fadeIn() togetherWith fadeOut() },
-                    label = "applyButtonText"
-                ) { targetHasChanges ->
-                    Text(
-                        text = stringResource(
-                            if (targetHasChanges) R.string.appearance_apply_changes else R.string.appearance_applied
-                        ),
-                        fontWeight = FontWeight.Bold,
-                        style = MaterialTheme.typography.titleMedium
-                    )
-                }
-            }
         }
     }
 }

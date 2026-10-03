@@ -121,16 +121,28 @@ fun ThermalDiagnosticsScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .statusBarsPadding()
-                    .padding(horizontal = FrameXSpacing.Standard, vertical = FrameXSpacing.Medium),
+                    .padding(horizontal = 16.dp, vertical = 12.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                IconButton(onClick = onNavigateBack) {
-                    Icon(Icons.Default.ArrowBackIosNew, contentDescription = "Back", tint = Color.White)
+                IconButton(
+                    onClick = onNavigateBack,
+                    modifier = Modifier.size(48.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.ArrowBackIosNew,
+                        contentDescription = "Back",
+                        tint = Color.White
+                    )
                 }
-                Column {
-                    Text("Thermal Diagnostics", style = MaterialTheme.typography.titleMedium, color = Color.White)
-                    Text("Real-time hardware telemetry & root cause analysis", style = MaterialTheme.typography.bodySmall, color = Color.Gray)
-                }
+                Spacer(modifier = Modifier.weight(1f))
+                Text(
+                    text = "Thermal Diagnostics",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.White
+                )
+                Spacer(modifier = Modifier.weight(1f))
+                Spacer(modifier = Modifier.width(48.dp))
             }
 
             Column(

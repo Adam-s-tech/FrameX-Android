@@ -66,9 +66,7 @@ fun AboutScreen(
         ) {
             IconButton(
                 onClick = onNavigateBack,
-                modifier = Modifier
-                    .minimumInteractiveComponentSize()
-                    .background(Color.White.copy(alpha = 0.05f), CircleShape)
+                modifier = Modifier.size(48.dp)
             ) {
                 Icon(
                     imageVector = Icons.AutoMirrored.Filled.ArrowBack,
@@ -76,17 +74,15 @@ fun AboutScreen(
                     tint = Color.White
                 )
             }
-
+            Spacer(modifier = Modifier.weight(1f))
             Text(
                 text = "About & Legal",
-                color = Color.White,
-                fontSize = 18.sp,
+                style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold,
-                textAlign = TextAlign.Center,
-                modifier = Modifier
-                    .weight(1f)
-                    .padding(end = 48.dp)
+                color = Color.White
             )
+            Spacer(modifier = Modifier.weight(1f))
+            Spacer(modifier = Modifier.width(48.dp))
         }
 
         // Scrollable Content

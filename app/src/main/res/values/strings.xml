@@ -58,9 +58,9 @@
     <string name="dashboard_missing_prefix">Missing: </string>
     <string name="dashboard_quick_access">QUICK ACCESS</string>
     <string name="dashboard_metrics_title">Metrics</string>
-    <string name="dashboard_metrics_desc">FPS · CPU · GPU · RAM</string>
+    <string name="dashboard_metrics_desc">Telemetry</string>
     <string name="dashboard_theme_title">Theme</string>
-    <string name="dashboard_theme_desc">Colors · Opacity · Size</string>
+    <string name="dashboard_theme_desc">Appearance</string>
     <string name="dashboard_performance_title">Performance</string>
     <string name="dashboard_performance_desc">Game mode</string>
     <string name="dashboard_shizuku_title">Shizuku</string>
@@ -128,15 +128,21 @@
 
     <!-- Overlay Customization -->
     <string name="overlay_config_title">Overlay Config</string>
-    <string name="overlay_active_modules">Active Modules</string>
+    <string name="overlay_layout_title">OVERLAY LAYOUT</string>
+    <string name="overlay_active_modules">ACTIVE MODULES</string>
     <string name="overlay_reorder_hint">Drag to reorder. Tap icon to toggle icon. Switch to show in overlay.</string>
     <string name="overlay_reset_order_cd">Reset to default order</string>
+    <string name="overlay_reset_btn">Reset</string>
     <string name="overlay_order_reset_toast">Order reset to default</string>
     <string name="overlay_saved_toast">Overlay configuration saved!</string>
-    <string name="overlay_preview_label">Preview</string>
+    <string name="overlay_preview_label">PREVIEW</string>
     <string name="overlay_mode_minimal">Minimal</string>
     <string name="overlay_mode_compact">Compact</string>
     <string name="overlay_mode_expanded">Expanded</string>
+    <string name="overlay_mode_minimal_desc">Values only in a slim inline bar</string>
+    <string name="overlay_mode_compact_desc">Balanced labels and metrics</string>
+    <string name="overlay_mode_expanded_desc">Full vertical telemetry list</string>
+    <string name="overlay_icon_btn">Icon</string>
     <string name="overlay_icon_enabled_cd">Icon enabled (tap to disable)</string>
     <string name="overlay_icon_disabled_cd">Icon disabled (tap to enable)</string>
 
