@@ -13,9 +13,13 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBackIosNew
 import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.stringResource
+import com.framex.app.R
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -364,5 +368,52 @@ fun QuickActionButton(
             statusTag = statusTag,
             icon = icon
         )
+    }
+}
+
+/**
+ * Standardized sub-screen top app bar with 48dp optical balance back button,
+ * centered title, and 48dp balance spacer.
+ */
+@Composable
+fun FrameXTopBar(
+    title: String,
+    onNavigateBack: () -> Unit,
+    modifier: Modifier = Modifier,
+    applyStatusBarsPadding: Boolean = true,
+    navigationIcon: ImageVector = Icons.Default.ArrowBackIosNew,
+    navigationContentDescription: String = stringResource(R.string.action_back)
+) {
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .then(if (applyStatusBarsPadding) Modifier.statusBarsPadding() else Modifier)
+            .padding(horizontal = 16.dp, vertical = 12.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        IconButton(
+            onClick = onNavigateBack,
+            modifier = Modifier.size(48.dp)
+        ) {
+            Icon(
+                imageVector = navigationIcon,
+                contentDescription = navigationContentDescription,
+                tint = Color.White
+            )
+        }
+
+        Spacer(modifier = Modifier.weight(1f))
+
+        Text(
+            text = title,
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.Bold,
+            color = Color.White
+        )
+
+        Spacer(modifier = Modifier.weight(1f))
+
+        // 48dp optical balance spacer matching the back button touch target
+        Spacer(modifier = Modifier.width(48.dp))
     }
 }

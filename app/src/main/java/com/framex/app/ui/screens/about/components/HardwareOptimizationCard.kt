@@ -15,12 +15,15 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Tune
+import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.Memory
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Switch
+import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -30,8 +33,13 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.framex.app.ui.components.WovenNetBackground
 
+private val CardBackground = Color(0xFF0F1015)
+
+/**
+ * Hardware optimizations card for vendor-specific gaming mode extensions.
+ * Allows toggling privileged hardware overrides for Vivo / iQOO devices.
+ */
 @Composable
 fun HardwareOptimizationCard(
     isVivoDevice: Boolean,
@@ -40,47 +48,59 @@ fun HardwareOptimizationCard(
     modifier: Modifier = Modifier
 ) {
     Column(modifier = modifier.fillMaxWidth()) {
-        Text(
-            text = "HARDWARE OPTIMIZATIONS",
-            fontSize = 12.sp,
-            fontWeight = FontWeight.SemiBold,
-            color = Color.Gray,
-            letterSpacing = 0.06.sp,
-            modifier = Modifier.padding(start = 4.dp, bottom = 12.dp)
-        )
+        // Section Header: Dashboard style with 16dp pure white gear icon and titleSmall text
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 12.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Icon(
+                imageVector = Icons.Default.Settings,
+                contentDescription = null,
+                tint = Color.White,
+                modifier = Modifier.size(16.dp)
+            )
+            Spacer(modifier = Modifier.width(8.dp))
+            Text(
+                text = "HARDWARE OPTIMIZATIONS",
+                style = MaterialTheme.typography.titleSmall,
+                fontWeight = FontWeight.Bold,
+                color = Color.White,
+                letterSpacing = 0.5.sp
+            )
+        }
 
         Card(
             shape = RoundedCornerShape(20.dp),
-            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+            colors = CardDefaults.cardColors(containerColor = CardBackground),
             border = BorderStroke(1.dp, Color.White.copy(alpha = 0.08f)),
             modifier = Modifier.fillMaxWidth()
         ) {
-            Box(modifier = Modifier.fillMaxWidth()) {
-                WovenNetBackground(modifier = Modifier.matchParentSize())
-
+            Column(modifier = Modifier.padding(16.dp)) {
                 Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(20.dp),
+                    modifier = Modifier.fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.weight(1f).padding(end = 16.dp)
+                        modifier = Modifier
+                            .weight(1f)
+                            .padding(end = 12.dp)
                     ) {
                         Box(
                             modifier = Modifier
                                 .size(42.dp)
                                 .clip(RoundedCornerShape(12.dp))
-                                .background(Color(0xFF2FBF9F).copy(alpha = 0.14f))
-                                .border(1.dp, Color(0xFF2FBF9F).copy(alpha = 0.28f), RoundedCornerShape(12.dp)),
+                                .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.15f))
+                                .border(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.35f), RoundedCornerShape(12.dp)),
                             contentAlignment = Alignment.Center
                         ) {
                             Icon(
-                                imageVector = Icons.Default.Tune,
+                                imageVector = Icons.Default.Memory,
                                 contentDescription = null,
-                                tint = if (isVivoDevice) Color(0xFF4FDCB8) else Color.Gray,
+                                tint = if (isVivoDevice) Color.White else Color.Gray,
                                 modifier = Modifier.size(20.dp)
                             )
                         }
@@ -92,36 +112,62 @@ fun HardwareOptimizationCard(
                                 text = "Vivo / iQOO Hardware Suite",
                                 color = if (isVivoDevice) Color.White else Color.White.copy(alpha = 0.5f),
                                 fontWeight = FontWeight.SemiBold,
-                                fontSize = 15.5.sp
+                                fontSize = 15.sp
                             )
                             Spacer(modifier = Modifier.height(2.dp))
-                            if (isVivoDevice) {
-                                Text(
-                                    text = "Applies power, touch, gyro and scheduler overrides during Gaming Mode. Off = only app suspension, RAM purge and DND.",
-                                    color = Color.White.copy(alpha = 0.6f),
-                                    fontSize = 12.5.sp
-                                )
-                                Spacer(modifier = Modifier.height(4.dp))
-                                Text(
-                                    text = "Enabling takes effect at the next activation.",
-                                    color = Color(0xFF4FDCB8).copy(alpha = 0.8f),
-                                    fontSize = 11.5.sp
-                                )
-                            } else {
-                                Text(
-                                    text = "Not applicable on this device",
-                                    color = Color.White.copy(alpha = 0.4f),
-                                    fontSize = 12.5.sp
-                                )
-                            }
+                            Text(
+                                text = if (isVivoDevice) {
+                                    "Applies power, touch, gyro and scheduler overrides during Gaming Mode. Off = only app suspension, RAM purge and DND."
+                                } else {
+                                    "Not applicable on this device."
+                                },
+                                color = Color(0xFFA0A0A0),
+                                fontSize = 12.sp,
+                                lineHeight = 16.sp
+                            )
                         }
                     }
 
                     Switch(
                         checked = isVivoDevice && isVivoOptActive,
                         enabled = isVivoDevice,
-                        onCheckedChange = onToggleVivoOpt
+                        onCheckedChange = onToggleVivoOpt,
+                        colors = SwitchDefaults.colors(
+                            checkedThumbColor = Color.White,
+                            checkedTrackColor = MaterialTheme.colorScheme.primary,
+                            uncheckedThumbColor = Color.Gray,
+                            uncheckedTrackColor = Color(0xFF20222A),
+                            uncheckedBorderColor = Color.Transparent
+                        )
                     )
+                }
+
+                if (isVivoDevice) {
+                    Spacer(modifier = Modifier.height(14.dp))
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(12.dp))
+                            .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.10f))
+                            .border(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.30f), RoundedCornerShape(12.dp))
+                            .padding(horizontal = 12.dp, vertical = 9.dp)
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(
+                                imageVector = Icons.Default.Info,
+                                contentDescription = null,
+                                tint = Color.White,
+                                modifier = Modifier.size(16.dp)
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                text = "Enabling takes effect at the next game launch.",
+                                color = Color.White,
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.Medium
+                            )
+                        }
+                    }
                 }
             }
         }

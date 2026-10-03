@@ -45,6 +45,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.framex.app.R
+import com.framex.app.ui.components.FrameXTopBar
 import com.framex.app.ui.screens.appearance.components.AppearancePreviewCard
 import com.framex.app.ui.screens.appearance.components.ContainerStyleCard
 import com.framex.app.ui.screens.appearance.components.OpacityCard
@@ -70,36 +71,10 @@ fun AppearanceScreen(
     ) {
         Column(modifier = Modifier.fillMaxSize()) {
             // Header with statusBarsPadding
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .statusBarsPadding()
-                    .padding(horizontal = 16.dp, vertical = 12.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                IconButton(
-                    onClick = onNavigateBack,
-                    modifier = Modifier.size(48.dp)
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.ArrowBackIosNew,
-                        contentDescription = "Back",
-                        tint = Color.White
-                    )
-                }
-
-                Spacer(modifier = Modifier.weight(1f))
-
-                Text(
-                    text = stringResource(R.string.appearance_title),
-                    style = MaterialTheme.typography.titleMedium,
-                    color = Color.White,
-                    fontWeight = FontWeight.SemiBold
-                )
-
-                Spacer(modifier = Modifier.weight(1f))
-                Spacer(modifier = Modifier.width(48.dp)) // Optical balance against Back button
-            }
+            FrameXTopBar(
+                title = stringResource(R.string.appearance_title),
+                onNavigateBack = onNavigateBack
+            )
 
             // Scrollable Content
             Column(

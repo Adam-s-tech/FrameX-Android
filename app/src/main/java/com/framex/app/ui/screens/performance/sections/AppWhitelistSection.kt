@@ -27,6 +27,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -122,20 +123,22 @@ private fun AppWhitelistContent(
         } else {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 visibleApps.forEach { app ->
-                    Card(
-                        modifier = Modifier.fillMaxWidth(),
-                        shape = FrameXShapes.Medium,
-                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                        border = BorderStroke(FrameXBorders.ActiveBorderWidth, FrameXBorders.CardStroke)
-                    ) {
-                        Box(modifier = Modifier.fillMaxWidth()) {
-                            WovenNetBackground(modifier = Modifier.matchParentSize())
-                            Box(modifier = Modifier.padding(horizontal = 14.dp, vertical = 6.dp)) {
-                                AppWhitelistRow(
-                                    app = app,
-                                    isWhitelisted = whitelist.contains(app.packageName),
-                                    onToggle = { onToggleWhitelist(app.packageName) }
-                                )
+                    key(app.packageName) {
+                        Card(
+                            modifier = Modifier.fillMaxWidth(),
+                            shape = FrameXShapes.Medium,
+                            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                            border = BorderStroke(FrameXBorders.ActiveBorderWidth, FrameXBorders.CardStroke)
+                        ) {
+                            Box(modifier = Modifier.fillMaxWidth()) {
+                                WovenNetBackground(modifier = Modifier.matchParentSize())
+                                Box(modifier = Modifier.padding(horizontal = 14.dp, vertical = 6.dp)) {
+                                    AppWhitelistRow(
+                                        app = app,
+                                        isWhitelisted = whitelist.contains(app.packageName),
+                                        onToggle = { onToggleWhitelist(app.packageName) }
+                                    )
+                                }
                             }
                         }
                     }

@@ -15,9 +15,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.framex.app.R
 import com.framex.app.metrics.MetricsEngine
+import com.framex.app.ui.components.FrameXTopBar
 import com.framex.app.metrics.MetricsState
 import com.framex.app.ui.screens.thermal.components.GraphLegend
 import com.framex.app.ui.screens.thermal.components.ModernInteractiveGraph
@@ -117,33 +120,10 @@ fun ThermalDiagnosticsScreen(
     ) {
         Column(modifier = Modifier.fillMaxSize()) {
             // Header Bar
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .statusBarsPadding()
-                    .padding(horizontal = 16.dp, vertical = 12.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                IconButton(
-                    onClick = onNavigateBack,
-                    modifier = Modifier.size(48.dp)
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.ArrowBackIosNew,
-                        contentDescription = "Back",
-                        tint = Color.White
-                    )
-                }
-                Spacer(modifier = Modifier.weight(1f))
-                Text(
-                    text = "Thermal Diagnostics",
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.White
-                )
-                Spacer(modifier = Modifier.weight(1f))
-                Spacer(modifier = Modifier.width(48.dp))
-            }
+            FrameXTopBar(
+                title = stringResource(R.string.thermal_diagnostics_title),
+                onNavigateBack = onNavigateBack
+            )
 
             Column(
                 modifier = Modifier

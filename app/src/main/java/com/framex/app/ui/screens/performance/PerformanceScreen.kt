@@ -25,8 +25,11 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.framex.app.R
 import com.framex.app.gaming.GamingModeState
+import com.framex.app.ui.components.FrameXTopBar
 import com.framex.app.ui.components.DeepFreezeSafeguardDialog
 import com.framex.app.ui.screens.performance.dialogs.AddGameModal
 import com.framex.app.ui.screens.performance.dialogs.DeployingGameModal
@@ -92,29 +95,10 @@ fun PerformanceScreen(
         ) {
             // Header with statusBarsPadding
             item(key = "performance_header") {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .statusBarsPadding()
-                        .padding(horizontal = 16.dp, vertical = 12.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    IconButton(onClick = onNavigateBack) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Back",
-                            tint = Color.White
-                        )
-                    }
-                    Spacer(modifier = Modifier.weight(1f))
-                    Text(
-                        text = "Performance",
-                        style = MaterialTheme.typography.titleMedium,
-                        color = Color.White
-                    )
-                    Spacer(modifier = Modifier.weight(1f))
-                    Spacer(modifier = Modifier.width(48.dp))
-                }
+                FrameXTopBar(
+                    title = stringResource(R.string.performance_title),
+                    onNavigateBack = onNavigateBack
+                )
             }
 
             // Hero Gaming Mode card

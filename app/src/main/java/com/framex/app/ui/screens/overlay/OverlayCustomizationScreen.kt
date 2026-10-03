@@ -23,6 +23,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.framex.app.R
 import com.framex.app.ui.components.FrameXApplyButton
+import com.framex.app.ui.components.FrameXTopBar
 import com.framex.app.ui.components.ReorderableList
 import com.framex.app.ui.screens.overlay.components.ModeSelector
 import com.framex.app.ui.screens.overlay.components.ModuleRow
@@ -49,39 +50,15 @@ fun OverlayCustomizationScreen(
     ) {
         Column(modifier = Modifier.fillMaxSize()) {
             // Header Bar
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .statusBarsPadding()
-                    .padding(horizontal = 16.dp, vertical = 12.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                IconButton(
-                    onClick = onNavigateBack,
-                    modifier = Modifier.size(48.dp)
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.ArrowBackIosNew,
-                        contentDescription = stringResource(R.string.action_back),
-                        tint = Color.White
-                    )
-                }
-                Spacer(modifier = Modifier.weight(1f))
-                Text(
-                    text = stringResource(R.string.overlay_config_title),
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.White
-                )
-                Spacer(modifier = Modifier.weight(1f))
-                Spacer(modifier = Modifier.width(48.dp))
-            }
+            FrameXTopBar(
+                title = stringResource(R.string.overlay_config_title),
+                onNavigateBack = onNavigateBack
+            )
 
             Spacer(modifier = Modifier.height(4.dp))
 
             // Mode Selector
             ModeSelector(
-                modes = OVERLAY_MODES,
                 selectedMode = uiState.selectedMode,
                 accentColor = accentColor,
                 onModeSelected = { onEvent(OverlayCustomizationUiEvent.SelectMode(it)) },

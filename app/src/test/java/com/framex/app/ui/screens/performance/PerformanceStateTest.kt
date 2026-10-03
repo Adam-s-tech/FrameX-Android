@@ -64,11 +64,17 @@ class PerformanceStateTest {
             override fun prepareToDraw() {}
         }
         val pkg = "com.example.game"
+        val pkg2 = "com.example.other"
+        assertNull(AppIconCache.get(pkg))
+        assertNull(AppIconCache.get(pkg2))
+
         AppIconCache.put(pkg, dummyBitmap)
         assertEquals(dummyBitmap, AppIconCache.get(pkg))
+        assertNull(AppIconCache.get(pkg2))
 
         AppIconCache.clear()
         assertNull(AppIconCache.get(pkg))
+        assertNull(AppIconCache.get(pkg2))
     }
 
     @Test

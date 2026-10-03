@@ -38,7 +38,7 @@ private fun getModuleCategoryColor(id: MetricModuleId): Color = when (id) {
     MetricModuleId.CPU_FREQUENCY -> Color(0xFFF59E0B)
     MetricModuleId.CPU_CLUSTERS -> Color(0xFF06B6D4)
     MetricModuleId.RAM_USAGE -> Color(0xFF8B5CF6)
-    MetricModuleId.BATTERY_TEMPERATURE -> Color(0xFFF97316)
+    MetricModuleId.BATTERY_TEMPERATURE -> Color(0xFF00E5FF)
     MetricModuleId.THERMAL_MONITOR -> Color(0xFFEF4444)
     MetricModuleId.BATTERY_LEVEL -> Color(0xFF10B981)
     MetricModuleId.CLOCK -> Color(0xFF3B82F6)
@@ -104,7 +104,7 @@ fun ModuleRow(
             Icon(
                 imageVector = info.icon,
                 contentDescription = null,
-                tint = categoryColor,
+                tint = Color.White,
                 modifier = Modifier.size(20.dp)
             )
         }
@@ -145,32 +145,39 @@ fun ModuleRow(
 
         Box(
             modifier = Modifier
-                .size(36.dp)
+                .size(48.dp)
                 .clip(CircleShape)
-                .background(
-                    if (isIconActive) accentColor.copy(alpha = 0.15f)
-                    else Color(0xFF14161E)
-                )
-                .border(
-                    width = 1.dp,
-                    color = if (isIconActive) accentColor.copy(alpha = 0.45f) else Color.White.copy(alpha = 0.08f),
-                    shape = CircleShape
-                )
-                .semantics {
-                    contentDescription = iconCd
-                }
                 .clickable(
                     role = Role.Button,
                     onClick = onToggleIcon
-                ),
+                )
+                .semantics {
+                    contentDescription = iconCd
+                },
             contentAlignment = Alignment.Center
         ) {
-            Icon(
-                imageVector = if (isIconActive) Icons.Outlined.Visibility else Icons.Outlined.VisibilityOff,
-                contentDescription = null,
-                tint = if (isIconActive) accentColor else Color(0xFF757575),
-                modifier = Modifier.size(16.dp)
-            )
+            Box(
+                modifier = Modifier
+                    .size(36.dp)
+                    .clip(CircleShape)
+                    .background(
+                        if (isIconActive) accentColor.copy(alpha = 0.15f)
+                        else Color(0xFF14161E)
+                    )
+                    .border(
+                        width = 1.dp,
+                        color = if (isIconActive) accentColor.copy(alpha = 0.45f) else Color.White.copy(alpha = 0.08f),
+                        shape = CircleShape
+                    ),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = if (isIconActive) Icons.Outlined.Visibility else Icons.Outlined.VisibilityOff,
+                    contentDescription = null,
+                    tint = if (isIconActive) accentColor else Color(0xFF757575),
+                    modifier = Modifier.size(16.dp)
+                )
+            }
         }
 
         Spacer(modifier = Modifier.width(8.dp))

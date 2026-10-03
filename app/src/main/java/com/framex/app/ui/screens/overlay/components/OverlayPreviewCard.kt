@@ -10,6 +10,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -94,16 +95,26 @@ fun OverlayPreviewCard(
                 .padding(16.dp),
             contentAlignment = Alignment.Center
         ) {
+            val enabledModules = remember(modules) {
+                modules.filter { it.enabled }.map { it.id.storageKey }.toSet()
+            }
+            val moduleOrder = remember(modules) {
+                modules.map { it.id.storageKey }
+            }
+            val enabledModuleIcons = remember(modules) {
+                modules.filter { it.showIcon }.map { it.id.storageKey }.toSet()
+            }
+
             OverlayPreviewContent(
                 config = OverlayDisplayConfig(
                     mode = selectedMode,
-                    enabledModules = modules.filter { it.enabled }.map { it.id.storageKey }.toSet(),
-                    moduleOrder = modules.map { it.id.storageKey },
+                    enabledModules = enabledModules,
+                    moduleOrder = moduleOrder,
                     opacity = opacity,
                     overlayScale = textScale,
                     useMonospace = fontFamily == FontFamily.Monospace,
                     colorIndex = colorIndex,
-                    enabledModuleIcons = modules.filter { it.showIcon }.map { it.id.storageKey }.toSet()
+                    enabledModuleIcons = enabledModuleIcons
                 )
             )
         }

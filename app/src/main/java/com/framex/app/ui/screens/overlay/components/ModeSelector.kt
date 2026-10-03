@@ -48,7 +48,6 @@ private val MODE_ITEMS = listOf(
  */
 @Composable
 fun ModeSelector(
-    modes: List<String>,
     selectedMode: String,
     accentColor: Color,
     onModeSelected: (String) -> Unit,

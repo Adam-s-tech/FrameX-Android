@@ -18,8 +18,11 @@ import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.produceState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -45,12 +48,14 @@ fun AppWhitelistRow(
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
-    val iconBitmap by produceState<ImageBitmap?>(
-        initialValue = AppIconCache.get(app.packageName),
-        key1 = app.packageName
-    ) {
-        if (value == null) {
-            value = AppIconCache.loadIcon(context, app.packageName)
+    var iconBitmap by remember(app.packageName) {
+        mutableStateOf(AppIconCache.get(app.packageName))
+    }
+
+    // Asynchronously loads the application icon bound to the package identity.
+    LaunchedEffect(app.packageName) {
+        if (iconBitmap == null) {
+            iconBitmap = AppIconCache.loadIcon(context, app.packageName)
         }
     }
 

@@ -249,6 +249,10 @@ class EsportsOptimizationEngine @Inject constructor(
     }
 
     private suspend fun applyPerformanceGovernor() {
+        if (deviceDiagnosticManager.isVivoOrIqoo()) {
+            FrameXLog.w("Fixed performance mode bypassed on Vivo/iQOO firmware to prevent display lockout", tag = TAG)
+            return
+        }
         if (settingsRepository.fixedPerformanceMode.value) {
             val specs = listOf(
                 CommandSpec("cmd power set-fixed-performance-mode-enabled true", OpPriority.PRIMARY)

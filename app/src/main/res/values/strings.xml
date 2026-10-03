@@ -142,7 +142,6 @@
     <string name="overlay_mode_minimal_desc">Values only in a slim inline bar</string>
     <string name="overlay_mode_compact_desc">Balanced labels and metrics</string>
     <string name="overlay_mode_expanded_desc">Full vertical telemetry list</string>
-    <string name="overlay_icon_btn">Icon</string>
     <string name="overlay_icon_enabled_cd">Icon enabled (tap to disable)</string>
     <string name="overlay_icon_disabled_cd">Icon disabled (tap to enable)</string>
 
@@ -184,4 +183,11 @@
     <string name="appearance_value_color_silver">Silver</string>
     <string name="appearance_value_color_auto">Auto (Dynamic FPS)</string>
     <string name="appearance_value_color_auto_desc">Auto Value Color: Dynamically colors metrics (Green, Yellow, Red) based on live FPS performance</string>
+
+    <!-- Sub-screen Titles and Actions -->
+    <string name="about_legal_title">About &amp; Legal</string>
+    <string name="thermal_diagnostics_title">Thermal Diagnostics</string>
+    <string name="performance_title">Performance</string>
+    <string name="view_on_github">View on GitHub</string>
+    <string name="contact_developer">Contact Developer</string>
 </resources>

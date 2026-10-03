@@ -19,6 +19,7 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
@@ -140,7 +141,7 @@ fun ChildCommandToggleRow(
             onCheckedChange = onCheckedChange,
             colors = SwitchDefaults.colors(
                 checkedThumbColor = Color.White,
-                checkedTrackColor = Color(0xFF10B981),
+                checkedTrackColor = MaterialTheme.colorScheme.primary,
                 uncheckedThumbColor = Color.Gray,
                 uncheckedTrackColor = Color(0xFF20202A)
             )
@@ -163,7 +164,7 @@ fun ExperimentalSectionDivider(
             Icon(
                 imageVector = Icons.Default.Science,
                 contentDescription = null,
-                tint = Color(0xFFF59E0B),
+                tint = Color.White,
                 modifier = Modifier.size(16.dp)
             )
             Spacer(modifier = Modifier.width(6.dp))
@@ -171,7 +172,7 @@ fun ExperimentalSectionDivider(
                 text = "EXPERIMENTAL SETTINGS",
                 fontSize = 11.5.sp,
                 fontWeight = FontWeight.Bold,
-                color = Color(0xFFF59E0B),
+                color = MaterialTheme.colorScheme.primary,
                 letterSpacing = 0.05.sp
             )
         }
@@ -212,7 +213,7 @@ private fun CommandToggleHeader(
                 Icon(
                     imageVector = icon,
                     contentDescription = null,
-                    tint = if (iconTint != Color.Unspecified) iconTint else statusColor,
+                    tint = if (iconTint != Color.Unspecified) iconTint else Color.White,
                     modifier = Modifier.size(20.dp)
                 )
                 Spacer(modifier = Modifier.width(10.dp))
@@ -238,7 +239,7 @@ private fun CommandToggleHeader(
             onCheckedChange = onCheckedChange,
             colors = SwitchDefaults.colors(
                 checkedThumbColor = Color.White,
-                checkedTrackColor = statusColor,
+                checkedTrackColor = MaterialTheme.colorScheme.primary,
                 uncheckedThumbColor = Color.Gray,
                 uncheckedTrackColor = Color(0xFF272730)
             )
@@ -258,7 +259,7 @@ private fun CommandWarningBox(warningText: String) {
         Icon(
             imageVector = Icons.Default.WarningAmber,
             contentDescription = null,
-            tint = Color(0xFFF87171),
+            tint = Color.White,
             modifier = Modifier.size(14.dp).padding(top = 1.dp)
         )
         Spacer(modifier = Modifier.width(6.dp))

@@ -11,15 +11,16 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.produceState
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
-import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -27,10 +28,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
-import androidx.core.graphics.drawable.toBitmap
 import com.framex.app.gaming.AppInfo
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
+import com.framex.app.ui.screens.performance.AppIconCache
 
 @Composable
 fun AddGameModal(
@@ -82,12 +81,12 @@ fun AddGameModal(
                                 .padding(8.dp),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            val iconBitmap by produceState<ImageBitmap?>(
-                                initialValue = com.framex.app.ui.screens.performance.AppIconCache.get(app.packageName),
-                                key1 = app.packageName
-                            ) {
-                                if (value == null) {
-                                    value = com.framex.app.ui.screens.performance.AppIconCache.loadIcon(context, app.packageName)
+                            var iconBitmap by remember(app.packageName) {
+                                mutableStateOf(AppIconCache.get(app.packageName))
+                            }
+                            LaunchedEffect(app.packageName) {
+                                if (iconBitmap == null) {
+                                    iconBitmap = AppIconCache.loadIcon(context, app.packageName)
                                 }
                             }
                             val currentBitmap = iconBitmap

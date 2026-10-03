@@ -5,6 +5,8 @@ import androidx.collection.LruCache
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.core.graphics.drawable.toBitmap
+import com.framex.app.utils.FrameXLog
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
@@ -14,7 +16,7 @@ import kotlinx.coroutines.withContext
  * while scrolling lists of apps at 60/120Hz.
  */
 object AppIconCache {
-    private const val MAX_ENTRIES = 150
+    private const val MAX_ENTRIES = 256
     private val cache = LruCache<String, ImageBitmap>(MAX_ENTRIES)
 
     fun get(packageName: String): ImageBitmap? = cache.get(packageName)
@@ -27,13 +29,26 @@ object AppIconCache {
         val cached = get(packageName)
         if (cached != null) return cached
 
-        return withContext(Dispatchers.IO) {
-            runCatching {
-                val drawable = context.packageManager.getApplicationIcon(packageName)
-                val bitmap = drawable.toBitmap().asImageBitmap()
+        return try {
+            withContext(Dispatchers.IO) {
+                val alreadyLoaded = get(packageName)
+                if (alreadyLoaded != null) return@withContext alreadyLoaded
+
+                val pm = context.packageManager
+                val drawable = pm.getApplicationIcon(packageName)
+                val density = context.resources.displayMetrics.density
+                val targetPx = (density * 48).toInt().coerceIn(72, 192)
+                val width = if (drawable.intrinsicWidth in 1..targetPx) drawable.intrinsicWidth else targetPx
+                val height = if (drawable.intrinsicHeight in 1..targetPx) drawable.intrinsicHeight else targetPx
+                val bitmap = drawable.toBitmap(width = width, height = height).asImageBitmap()
                 put(packageName, bitmap)
                 bitmap
-            }.getOrNull()
+            }
+        } catch (e: CancellationException) {
+            throw e
+        } catch (t: Throwable) {
+            FrameXLog.w("Failed to load app icon for $packageName", t)
+            null
         }
     }
 

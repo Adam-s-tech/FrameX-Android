@@ -30,6 +30,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.framex.app.R
+import com.framex.app.ui.components.FrameXTopBar
 import com.framex.app.ui.screens.permissions.components.PermissionRow
 import com.framex.app.ui.screens.permissions.components.PermissionSummaryHeader
 import com.framex.app.ui.screens.permissions.components.ShizukuStatusCard
@@ -92,33 +93,10 @@ fun PermissionsScreen(
     ) {
         Column(modifier = Modifier.fillMaxSize()) {
             // Header Bar
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .statusBarsPadding()
-                    .padding(horizontal = 16.dp, vertical = 12.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                IconButton(
-                    onClick = onNavigateBack,
-                    modifier = Modifier.size(48.dp)
-                ) {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                        contentDescription = stringResource(R.string.action_back),
-                        tint = Color.White
-                    )
-                }
-                Spacer(modifier = Modifier.weight(1f))
-                Text(
-                    text = stringResource(R.string.perm_screen_title),
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.SemiBold,
-                    color = Color.White
-                )
-                Spacer(modifier = Modifier.weight(1f))
-                Spacer(modifier = Modifier.width(48.dp))
-            }
+            FrameXTopBar(
+                title = stringResource(R.string.perm_screen_title),
+                onNavigateBack = onNavigateBack
+            )
 
             // Scrollable Content
             Column(

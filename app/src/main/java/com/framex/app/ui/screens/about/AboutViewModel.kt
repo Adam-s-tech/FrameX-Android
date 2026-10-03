@@ -96,17 +96,21 @@ private data class UpdateActionSnapshot(
 class AboutViewModel @Inject constructor(
     private val settingsRepository: SettingsRepository,
     private val crashLogRepository: CrashLogRepository,
-    val deviceDiagnosticManager: DeviceDiagnosticManager,
-    val updateRepository: UpdateRepository,
-    val updateInstaller: UpdateInstaller,
+    private val deviceDiagnosticManager: DeviceDiagnosticManager,
+    private val updateRepository: UpdateRepository,
+    private val updateInstaller: UpdateInstaller,
     private val gamingModeEngine: GamingModeEngine,
-    val vivoSuiteGate: VivoSuiteGate
+    private val vivoSuiteGate: VivoSuiteGate
 ) : ViewModel() {
 
     private val _effectChannel = Channel<AboutUiEffect>(Channel.BUFFERED)
     val effect = _effectChannel.receiveAsFlow()
 
     val isVivoHardware: Boolean get() = vivoSuiteGate.isVivoHardware
+    val deviceModelInfo: String get() = deviceDiagnosticManager.getDeviceModelInfo()
+
+    fun canInstallPackages(): Boolean = updateInstaller.canInstallPackages()
+    fun openUnknownAppSourcesSettings() = updateInstaller.openUnknownAppSourcesSettings()
 
     private val _versionName = MutableStateFlow(BuildConfig.VERSION_NAME)
     private val _versionCode = MutableStateFlow(BuildConfig.VERSION_CODE.toLong())
