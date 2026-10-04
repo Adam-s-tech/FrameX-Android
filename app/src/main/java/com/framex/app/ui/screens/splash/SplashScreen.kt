@@ -113,10 +113,6 @@ fun SplashScreen(
             UpdateDialog(
                 updateInfo = info,
                 downloadState = state.downloadState,
-                canInstallPackages = canInstallPackages,
-                onRequestInstallPermission = {
-                    onEvent(SplashUiEvent.InstallDownloadedApk(state.pendingInstallApk ?: return@UpdateDialog))
-                },
                 onDownloadAndInstallClicked = {
                     onEvent(SplashUiEvent.ResumeOrDownloadUpdate)
                 },

@@ -34,9 +34,7 @@ fun UpdateDialog(
     downloadState: DownloadState,
     onDownloadAndInstallClicked: () -> Unit,
     onRemindLaterClicked: () -> Unit,
-    onCancelDownload: () -> Unit = {},
-    canInstallPackages: () -> Boolean = { true },
-    onRequestInstallPermission: () -> Unit = {}
+    onCancelDownload: () -> Unit = {}
 ) {
     Dialog(onDismissRequest = onRemindLaterClicked) {
         Card(
@@ -194,13 +192,7 @@ fun UpdateDialog(
                         }
                     } else {
                         Button(
-                            onClick = {
-                                if (!canInstallPackages()) {
-                                    onRequestInstallPermission()
-                                } else {
-                                    onDownloadAndInstallClicked()
-                                }
-                            },
+                            onClick = onDownloadAndInstallClicked,
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .height(46.dp),

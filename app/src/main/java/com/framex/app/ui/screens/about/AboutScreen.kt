@@ -175,11 +175,6 @@ private fun AboutScreenDialogs(
         UpdateDialog(
             updateInfo = info,
             downloadState = state.downloadState,
-            canInstallPackages = canInstallPackages,
-            onRequestInstallPermission = {
-                val pendingApk = state.pendingInstallApk ?: return@UpdateDialog
-                onEvent(AboutUiEvent.InstallDownloadedApk(pendingApk))
-            },
             onDownloadAndInstallClicked = {
                 onEvent(AboutUiEvent.ResumeOrDownloadUpdate)
             },
