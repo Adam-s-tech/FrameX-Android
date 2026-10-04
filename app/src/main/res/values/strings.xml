@@ -83,6 +83,13 @@
     <string name="dashboard_no_recent_sessions_desc">Recorded gameplay sessions and performance metrics will appear here</string>
     <string name="coming_soon">Coming soon</string>
 
+    <!-- Splash Screen -->
+    <string name="splash_performance_suite">PERFORMANCE SUITE</string>
+    <string name="splash_checking_updates">Checking for updates…</string>
+    <string name="splash_no_updates_found">No updates found</string>
+    <string name="splash_launching_framex">Launching FrameX…</string>
+    <string name="splash_powered_by_shizuku">Powered by Shizuku</string>
+
     <!-- Overlay Preview -->
     <string name="overlay_no_modules">No modules</string>
 

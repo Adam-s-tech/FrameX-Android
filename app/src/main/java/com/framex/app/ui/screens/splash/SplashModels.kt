@@ -5,6 +5,11 @@ import com.framex.app.update.AppUpdateInfo
 import com.framex.app.update.DownloadState
 import java.io.File
 
+enum class SplashLoaderPhase {
+    CHECKING,
+    COMPLETE
+}
+
 @Immutable
 data class SplashUiState(
     val isOnboardingCompleted: Boolean = false,

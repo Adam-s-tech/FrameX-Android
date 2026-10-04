@@ -165,9 +165,9 @@ private fun CreatorProfileHeader(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "Mahesh Sharan",
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Bold,
+                    text = "@MaheshSharan",
+                    fontSize = 13.5.sp,
+                    fontWeight = FontWeight.Medium,
                     color = Color.White
                 )
 
@@ -186,14 +186,7 @@ private fun CreatorProfileHeader(
                 }
             }
 
-            Text(
-                text = "@MaheshSharan",
-                fontSize = 12.sp,
-                color = Color.Gray,
-                fontWeight = FontWeight.Normal
-            )
-
-            Spacer(modifier = Modifier.height(3.dp))
+            Spacer(modifier = Modifier.height(2.dp))
 
             Text(
                 text = "Developer & Maintainer of FrameX",

@@ -196,7 +196,7 @@ private fun HeroBrandingContent(
     modifier: Modifier = Modifier
 ) {
     Column(modifier = modifier) {
-        // App icon with neon border - scaled to fill container edges completely
+        // App icon with neon border - vector logo fills container cleanly with transparent background
         Box(
             modifier = Modifier
                 .size(76.dp)
@@ -206,12 +206,11 @@ private fun HeroBrandingContent(
             contentAlignment = Alignment.Center
         ) {
             Image(
-                painter = painterResource(id = R.mipmap.ic_launcher),
+                painter = painterResource(id = R.drawable.framex_logo),
                 contentDescription = "FrameX Logo",
-                contentScale = ContentScale.Crop,
                 modifier = Modifier
                     .fillMaxSize()
-                    .graphicsLayer(scaleX = 1.40f, scaleY = 1.40f)
+                    .graphicsLayer(scaleX = 1.70f, scaleY = 1.70f)
             )
         }
 
