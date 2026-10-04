@@ -143,12 +143,11 @@ class SplashViewModel @Inject constructor(
                         return@launch
                     }
                 }
-                delay(600)
-                proceedToNextScreen()
-            } else {
-                delay(1200)
-                proceedToNextScreen()
             }
+
+            // Safety timeout ensures navigation even if UI animation callback stalls
+            delay(5000L)
+            proceedToNextScreen()
         }
     }
 

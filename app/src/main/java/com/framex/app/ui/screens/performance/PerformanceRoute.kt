@@ -1,5 +1,8 @@
 package com.framex.app.ui.screens.performance
 
+import android.content.Intent
+import android.net.Uri
+import android.provider.Settings
 import android.widget.Toast
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -12,6 +15,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.framex.app.utils.FrameXLog
 
 @Composable
 fun PerformanceRoute(
@@ -48,6 +52,40 @@ fun PerformanceRoute(
         onEvent = viewModel::onEvent,
         getGameConfigBoostRam = viewModel::getGameConfigBoostRam,
         setGameConfigBoostRam = viewModel::setGameConfigBoostRam,
+        onRequestShizuku = {
+            val intent = context.packageManager.getLaunchIntentForPackage("moe.shizuku.privileged.api")
+                ?: Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+                    data = Uri.parse("package:moe.shizuku.privileged.api")
+                }
+            runCatching { context.startActivity(intent) }.onFailure { e ->
+                FrameXLog.w("Unable to open Shizuku settings", e)
+                Toast.makeText(context, "Unable to open Shizuku app", Toast.LENGTH_SHORT).show()
+            }
+        },
+        onRequestWriteSettings = {
+            val intent = Intent(
+                Settings.ACTION_MANAGE_WRITE_SETTINGS,
+                Uri.parse("package:${context.packageName}")
+            )
+            runCatching { context.startActivity(intent) }.onFailure { e ->
+                FrameXLog.w("Unable to open Write Settings", e)
+                Toast.makeText(context, "Unable to open Write Settings", Toast.LENGTH_SHORT).show()
+            }
+        },
+        onRequestDndAccess = {
+            val intent = Intent(Settings.ACTION_NOTIFICATION_POLICY_ACCESS_SETTINGS)
+            runCatching { context.startActivity(intent) }.onFailure { e ->
+                FrameXLog.w("Unable to open DND access settings", e)
+                Toast.makeText(context, "Unable to open DND settings", Toast.LENGTH_SHORT).show()
+            }
+        },
+        onRequestNotificationListener = {
+            val intent = Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS)
+            runCatching { context.startActivity(intent) }.onFailure { e ->
+                FrameXLog.w("Unable to open Notification Listener settings", e)
+                Toast.makeText(context, "Unable to open Notification Listener settings", Toast.LENGTH_SHORT).show()
+            }
+        },
         onNavigateBack = onNavigateBack,
         modifier = modifier
     )

@@ -2,12 +2,16 @@ package com.framex.app.ui.screens.dashboard.components
 
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.BarChart
 import androidx.compose.material.icons.filled.Bolt
-import androidx.compose.material.icons.filled.DashboardCustomize
-import androidx.compose.material.icons.filled.LocalFireDepartment
+import androidx.compose.material.icons.filled.ChevronRight
+import androidx.compose.material.icons.filled.GridView
 import androidx.compose.material.icons.filled.Palette
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -21,12 +25,16 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.framex.app.R
-import com.framex.app.ui.components.ActionGridCard
-import com.framex.app.ui.components.ActionRowTile
 
+/**
+ * 2x2 Quick Access Grid for primary configuration destinations:
+ * Metrics, Theme, Performance, and Shizuku.
+ * Section icon and header text are kept pure white per design specification.
+ */
 @Composable
 fun QuickAccessGrid(
     isShizukuReady: Boolean,
@@ -34,17 +42,16 @@ fun QuickAccessGrid(
     onNavigateToAppearance: () -> Unit,
     onNavigateToPerformance: () -> Unit,
     onNavigateToPermissions: () -> Unit,
-    onNavigateToThermalDiagnostics: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val emeraldColor = Color(0xFF2FBF9F)
+    val emeraldColor = Color(0xFF22C55E)
     val errorColor = MaterialTheme.colorScheme.error
 
     // Pulsing glow animation scoped exclusively to graphicsLayer to prevent recomposition spill
     val infiniteTransition = rememberInfiniteTransition(label = "shizukuGlowPulse")
     val alphaGlow by infiniteTransition.animateFloat(
-        initialValue = 0.3f,
-        targetValue = 0.95f,
+        initialValue = 0.35f,
+        targetValue = 1.0f,
         animationSpec = infiniteRepeatable(
             animation = tween(1000, easing = FastOutSlowInEasing),
             repeatMode = RepeatMode.Reverse
@@ -53,14 +60,28 @@ fun QuickAccessGrid(
     )
 
     Column(modifier = modifier.fillMaxWidth()) {
-        Text(
-            text = stringResource(R.string.dashboard_quick_access),
-            style = MaterialTheme.typography.labelSmall,
-            fontWeight = FontWeight.SemiBold,
-            color = Color.Gray,
-            letterSpacing = 0.5.sp,
-            modifier = Modifier.padding(start = 4.dp, bottom = 12.dp)
-        )
+        // Section Header: Pure white icon and typography
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 12.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Icon(
+                imageVector = Icons.Default.GridView,
+                contentDescription = null,
+                tint = Color.White,
+                modifier = Modifier.size(16.dp)
+            )
+            Spacer(modifier = Modifier.width(8.dp))
+            Text(
+                text = stringResource(R.string.dashboard_quick_access),
+                style = MaterialTheme.typography.titleSmall,
+                fontWeight = FontWeight.Bold,
+                color = Color.White,
+                letterSpacing = 0.5.sp
+            )
+        }
 
         // Row 1: Metrics & Theme
         Row(
@@ -69,28 +90,29 @@ fun QuickAccessGrid(
                 .height(IntrinsicSize.Max),
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            ActionGridCard(
+            QuickAccessCard(
                 title = stringResource(R.string.dashboard_metrics_title),
                 subtitle = stringResource(R.string.dashboard_metrics_desc),
-                iconContainerColor = Color(0xFF6C6CE0).copy(alpha = 0.14f),
-                iconContentColor = Color(0xFF9494EE),
+                iconContainerColor = Color(0xFF6366F1).copy(alpha = 0.16f),
+                iconContentColor = Color(0xFF818CF8),
                 onClick = onNavigateToOverlayCustomization,
                 modifier = Modifier
                     .weight(1f)
                     .fillMaxHeight(),
                 icon = {
                     Icon(
-                        imageVector = Icons.Default.DashboardCustomize,
-                        contentDescription = null
+                        imageVector = Icons.Default.BarChart,
+                        contentDescription = null,
+                        modifier = Modifier.size(20.dp)
                     )
                 }
             )
 
-            ActionGridCard(
+            QuickAccessCard(
                 title = stringResource(R.string.dashboard_theme_title),
                 subtitle = stringResource(R.string.dashboard_theme_desc),
-                iconContainerColor = Color(0xFFE8A23C).copy(alpha = 0.14f),
-                iconContentColor = Color(0xFFF0BB6E),
+                iconContainerColor = Color(0xFFF59E0B).copy(alpha = 0.16f),
+                iconContentColor = Color(0xFFFBBF24),
                 onClick = onNavigateToAppearance,
                 modifier = Modifier
                     .weight(1f)
@@ -98,7 +120,8 @@ fun QuickAccessGrid(
                 icon = {
                     Icon(
                         imageVector = Icons.Default.Palette,
-                        contentDescription = null
+                        contentDescription = null,
+                        modifier = Modifier.size(20.dp)
                     )
                 }
             )
@@ -113,11 +136,11 @@ fun QuickAccessGrid(
                 .height(IntrinsicSize.Max),
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            ActionGridCard(
+            QuickAccessCard(
                 title = stringResource(R.string.dashboard_performance_title),
                 subtitle = stringResource(R.string.dashboard_performance_desc),
-                iconContainerColor = Color(0xFF2FBF9F).copy(alpha = 0.14f),
-                iconContentColor = Color(0xFF4FDCB8),
+                iconContainerColor = Color(0xFF10B981).copy(alpha = 0.16f),
+                iconContentColor = Color(0xFF34D399),
                 onClick = onNavigateToPerformance,
                 modifier = Modifier
                     .weight(1f)
@@ -125,37 +148,24 @@ fun QuickAccessGrid(
                 icon = {
                     Icon(
                         imageVector = Icons.Default.Bolt,
-                        contentDescription = null
+                        contentDescription = null,
+                        modifier = Modifier.size(20.dp)
                     )
                 }
             )
 
-            ActionGridCard(
+            QuickAccessCard(
                 title = stringResource(R.string.dashboard_shizuku_title),
                 subtitle = if (isShizukuReady) {
                     stringResource(R.string.dashboard_connected)
                 } else {
                     stringResource(R.string.dashboard_disconnected)
                 },
-                iconContainerColor = if (isShizukuReady) {
-                    Color(0xFF3D9BE0).copy(alpha = 0.14f)
-                } else {
-                    errorColor.copy(alpha = 0.14f)
-                },
-                iconContentColor = if (isShizukuReady) {
-                    Color(0xFF6EB8EE)
-                } else {
-                    errorColor
-                },
-                onClick = onNavigateToPermissions,
-                modifier = Modifier
-                    .weight(1f)
-                    .fillMaxHeight(),
-                statusTag = {
+                subtitleContent = {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Box(
                             modifier = Modifier
-                                .size(7.dp)
+                                .size(6.dp)
                                 .clip(CircleShape)
                                 .graphicsLayer {
                                     if (isShizukuReady) {
@@ -171,39 +181,114 @@ fun QuickAccessGrid(
                             } else {
                                 stringResource(R.string.dashboard_disconnected)
                             },
-                            style = MaterialTheme.typography.labelSmall,
+                            style = MaterialTheme.typography.bodySmall,
                             color = if (isShizukuReady) emeraldColor else errorColor,
-                            fontWeight = FontWeight.SemiBold
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.Medium
                         )
                     }
                 },
+                iconContainerColor = if (isShizukuReady) {
+                    Color(0xFF3B82F6).copy(alpha = 0.16f)
+                } else {
+                    errorColor.copy(alpha = 0.16f)
+                },
+                iconContentColor = if (isShizukuReady) {
+                    Color(0xFF60A5FA)
+                } else {
+                    errorColor
+                },
+                onClick = onNavigateToPermissions,
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxHeight(),
                 icon = {
                     Text(
-                        text = "ADB",
-                        color = if (isShizukuReady) Color(0xFF6EB8EE) else errorColor,
+                        text = stringResource(R.string.dashboard_adb),
+                        color = if (isShizukuReady) Color(0xFF60A5FA) else errorColor,
                         fontWeight = FontWeight.Bold,
-                        style = MaterialTheme.typography.labelMedium
+                        style = MaterialTheme.typography.labelSmall,
+                        fontSize = 11.sp
                     )
                 }
             )
         }
+    }
+}
 
-        Spacer(modifier = Modifier.height(12.dp))
+private val GridCardShape = RoundedCornerShape(14.dp)
+private val GridIconShape = RoundedCornerShape(10.dp)
 
-        // Row 3: Full Width Thermal Diagnostics Tile
-        ActionRowTile(
-            title = stringResource(R.string.dashboard_thermal_title),
-            subtitle = stringResource(R.string.dashboard_thermal_desc),
-            iconContainerColor = Color(0xFFE8324A).copy(alpha = 0.14f),
-            iconContentColor = Color(0xFFF0576E),
-            onClick = onNavigateToThermalDiagnostics,
-            showChevron = true,
-            icon = {
-                Icon(
-                    imageVector = Icons.Default.LocalFireDepartment,
-                    contentDescription = null
-                )
+@Composable
+private fun QuickAccessCard(
+    title: String,
+    subtitle: String,
+    iconContainerColor: Color,
+    iconContentColor: Color,
+    onClick: () -> Unit,
+    icon: @Composable () -> Unit,
+    modifier: Modifier = Modifier,
+    subtitleContent: (@Composable () -> Unit)? = null
+) {
+    Box(
+        modifier = modifier
+            .clip(GridCardShape)
+            .background(Color(0xFF0F1015))
+            .border(1.dp, Color(0xFF1E2028), GridCardShape)
+            .clickable(onClick = onClick)
+            .padding(12.dp)
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(38.dp)
+                    .clip(GridIconShape)
+                    .background(iconContainerColor),
+                contentAlignment = Alignment.Center
+            ) {
+                androidx.compose.runtime.CompositionLocalProvider(
+                    androidx.compose.material3.LocalContentColor provides iconContentColor
+                ) {
+                    icon()
+                }
             }
-        )
+
+            Spacer(modifier = Modifier.width(10.dp))
+
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = title,
+                    style = MaterialTheme.typography.titleSmall,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.White
+                )
+                Spacer(modifier = Modifier.height(2.dp))
+                if (subtitleContent != null) {
+                    subtitleContent()
+                } else {
+                    Text(
+                        text = subtitle,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = Color(0xFF9E9E9E),
+                        fontSize = 11.sp,
+                        maxLines = 1,
+                        softWrap = false,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.width(6.dp))
+
+            Icon(
+                imageVector = Icons.Default.ChevronRight,
+                contentDescription = null,
+                tint = Color(0xFF616161),
+                modifier = Modifier.size(16.dp)
+            )
+        }
     }
 }

@@ -35,8 +35,8 @@ sealed interface OverlayCustomizationUiEvent {
     data class ReorderModules(val from: Int, val to: Int) : OverlayCustomizationUiEvent
     data class ToggleModuleEnabled(val id: MetricModuleId, val enabled: Boolean) : OverlayCustomizationUiEvent
     data class ToggleModuleIcon(val id: MetricModuleId) : OverlayCustomizationUiEvent
-    object ResetToDefaultOrder : OverlayCustomizationUiEvent
-    object SaveSettings : OverlayCustomizationUiEvent
+    data object ResetToDefaultOrder : OverlayCustomizationUiEvent
+    data object SaveSettings : OverlayCustomizationUiEvent
 }
 
 sealed interface OverlayCustomizationEffect {

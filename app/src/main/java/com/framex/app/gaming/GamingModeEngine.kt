@@ -217,6 +217,7 @@ class GamingModeEngine @Inject constructor(
         executionLedger.clear()
 
         if (shouldBoostRam) {
+            _state.value = GamingModeState.Enabling(0.15f, "Purging RAM Cache…")
             executeRamCachePurge()
         }
 
@@ -229,6 +230,7 @@ class GamingModeEngine @Inject constructor(
             val newlySuspendedPkgs = mutableSetOf<String>()
 
             if (shouldBoostRam && !isAlreadyActive) {
+                _state.value = GamingModeState.Enabling(0.35f, "Suspending Background Apps…")
                 val suspended = suspendBackgroundBloat(resolvedWhitelist, installedSafeToSuspend)
                 newlySuspendedPkgs.addAll(suspended)
             } else if (!shouldBoostRam) {
@@ -290,7 +292,6 @@ class GamingModeEngine @Inject constructor(
             val unsuspendedSuccessfully = revertPackageSuspensions(targetsToUnsuspend, snapshot)
             if (!unsuspendedSuccessfully) return
 
-            purgeProcessesPostUnsuspension()
             revertNotificationSuppression()
             cleanupLegacyPreferences()
             revertPlatformOptimizations()
@@ -653,11 +654,6 @@ class GamingModeEngine @Inject constructor(
         return true
     }
 
-    private suspend fun purgeProcessesPostUnsuspension() {
-        shizukuManager.executeCommand("am kill-all")
-        FrameXLog.i("Background process purge (am kill-all) executed", tag = TAG)
-    }
-
     private fun revertNotificationSuppression() {
         val nm = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         if (nm.isNotificationPolicyAccessGranted) {
@@ -683,12 +679,13 @@ class GamingModeEngine @Inject constructor(
         }
         when (effectivePath) {
             GamingPlatformPath.VIVO -> {
-                FrameXLog.i("Reverting Vivo gaming suite (persistedPath=$persistedPath)...", tag = TAG)
-                val revertSuccess = runCatching { vivoGamingOptimizer.revertOptimizations() }.getOrDefault(false)
-                if (revertSuccess) {
-                    FrameXLog.i("Vivo gaming suite reverted successfully", tag = TAG)
+                FrameXLog.i("Reverting Vivo gaming suite and generic overrides (persistedPath=$persistedPath)...", tag = TAG)
+                val vivoSuccess = runCatching { vivoGamingOptimizer.revertOptimizations() }.getOrDefault(false)
+                val genericSuccess = runCatching { esportsOptimizationEngine.revertOptimizations() }.getOrDefault(false)
+                if (vivoSuccess && genericSuccess) {
+                    FrameXLog.i("Vivo gaming suite and generic overrides reverted successfully", tag = TAG)
                 } else {
-                    FrameXLog.w("Vivo gaming suite revert failed or incomplete", tag = TAG)
+                    FrameXLog.w("Vivo suite revert finished with partial status (vivo=$vivoSuccess, generic=$genericSuccess)", tag = TAG)
                 }
                 settingsRepository.clearGamingOptimizationSnapshot()
             }

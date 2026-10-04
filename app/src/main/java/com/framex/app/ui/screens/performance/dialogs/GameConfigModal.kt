@@ -13,8 +13,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.ImageBitmap
-import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -22,10 +20,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
-import androidx.core.graphics.drawable.toBitmap
 import com.framex.app.gaming.AppInfo
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
+import com.framex.app.ui.screens.performance.AppIconCache
 
 @Composable
 fun GameConfigModal(
@@ -58,14 +54,14 @@ fun GameConfigModal(
             Column(modifier = Modifier.padding(24.dp)) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
 
-                    val iconBitmap by produceState<ImageBitmap?>(initialValue = null, key1 = app.packageName) {
-                        value = withContext(Dispatchers.IO) {
-                            try {
-                                val drawable = context.packageManager.getApplicationIcon(app.packageName)
-                                drawable.toBitmap().asImageBitmap()
-                            } catch (e: Exception) {
-                                null
-                            }
+                    var iconBitmap by remember(app.packageName) {
+                        mutableStateOf(AppIconCache.get(app.packageName))
+                    }
+
+                    // Asynchronously loads game icon when not present in memory cache.
+                    LaunchedEffect(app.packageName) {
+                        if (iconBitmap == null) {
+                            iconBitmap = AppIconCache.loadIcon(context, app.packageName)
                         }
                     }
                     val currentBitmap = iconBitmap

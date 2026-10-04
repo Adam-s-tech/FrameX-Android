@@ -34,16 +34,15 @@ fun AboutRoute(
                     Toast.makeText(context, effect.message, Toast.LENGTH_SHORT).show()
                 }
                 is AboutUiEffect.OpenUnknownSourcesSettings -> {
-                    viewModel.updateInstaller.openUnknownAppSourcesSettings()
+                    viewModel.openUnknownAppSourcesSettings()
                 }
                 is AboutUiEffect.OpenBrowser -> {
                     runCatching {
-                        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(effect.url))
+                        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(effect.url)).apply {
+                            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                        }
                         context.startActivity(intent)
                     }
-                }
-                is AboutUiEffect.ShareLogIntent -> {
-                    // Handled internally in CrashHandler.shareCrashLog
                 }
             }
         }
@@ -76,12 +75,14 @@ fun AboutRoute(
         onNavigateBack = onNavigateBack,
         onOpenUrl = { url ->
             runCatching {
-                val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+                val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url)).apply {
+                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                }
                 context.startActivity(intent)
             }
         },
-        canInstallPackages = { viewModel.updateInstaller.canInstallPackages() },
-        deviceModelInfo = viewModel.deviceDiagnosticManager.getDeviceModelInfo(),
+        canInstallPackages = { viewModel.canInstallPackages() },
+        deviceModelInfo = viewModel.deviceModelInfo,
         modifier = modifier
     )
 }

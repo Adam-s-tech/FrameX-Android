@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.framex.app.metrics.MetricsEngine
 import com.framex.app.overlay.OverlayService
 import com.framex.app.overlay.OverlayServiceController
+import com.framex.app.repository.SettingsRepository
 import com.framex.app.shizuku.ShizukuManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
@@ -20,10 +21,40 @@ import javax.inject.Inject
 class DashboardViewModel @Inject constructor(
     private val overlayServiceController: OverlayServiceController,
     private val shizukuManager: ShizukuManager,
-    private val metricsEngine: MetricsEngine
+    private val metricsEngine: MetricsEngine,
+    private val settingsRepository: SettingsRepository
 ) : ViewModel() {
 
     private val hasOverlayPermission = MutableStateFlow(overlayServiceController.hasOverlayPermission())
+    private val _whatsNewInfo = MutableStateFlow<WhatsNewInfo?>(null)
+
+    init {
+        checkWhatsNew()
+    }
+
+    private fun checkWhatsNew() {
+        if (WhatsNewRegistry.DEBUG_FORCE_SHOW_WHATS_NEW) {
+            val currentCode = com.framex.app.BuildConfig.VERSION_CODE.toLong()
+            _whatsNewInfo.value = WhatsNewRegistry.getWhatsNewForVersion(currentCode)
+            return
+        }
+
+        val lastSeenCode = settingsRepository.getLastSeenVersionCode()
+        val currentCode = com.framex.app.BuildConfig.VERSION_CODE.toLong()
+        val isOnboardingDone = settingsRepository.isOnboardingCompleted.value
+
+        if (lastSeenCode == 0L) {
+            if (isOnboardingDone) {
+                // Existing user updating to this build for the first time: show What's New once
+                _whatsNewInfo.value = WhatsNewRegistry.getWhatsNewForVersion(currentCode)
+            } else {
+                // Fresh install: record baseline so new users see onboarding instead
+                settingsRepository.updateLastSeenVersionCode(currentCode)
+            }
+        } else if (currentCode > lastSeenCode) {
+            _whatsNewInfo.value = WhatsNewRegistry.getWhatsNewForVersion(currentCode)
+        }
+    }
 
     val uiState: StateFlow<DashboardUiState> = combine(
         OverlayService.isRunning,
@@ -41,15 +72,19 @@ class DashboardViewModel @Inject constructor(
             fpsHistory = history,
             fpsStats = stats
         )
+    }.combine(_whatsNewInfo) { state, whatsNew ->
+        state.copy(whatsNewInfo = whatsNew)
     }
     .flowOn(Dispatchers.Default)
     .stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5000),
         initialValue = DashboardUiState(
+            isOverlayRunning = OverlayService.isRunning.value,
             hasOverlayPermission = overlayServiceController.hasOverlayPermission(),
             isShizukuAvailable = shizukuManager.isShizukuAvailable.value,
-            hasShizukuPermission = shizukuManager.hasPermission.value
+            hasShizukuPermission = shizukuManager.hasPermission.value,
+            whatsNewInfo = _whatsNewInfo.value
         )
     )
 
@@ -58,7 +93,14 @@ class DashboardViewModel @Inject constructor(
             DashboardUiEvent.StartOverlay -> overlayServiceController.startOverlayService()
             DashboardUiEvent.StopOverlay -> overlayServiceController.stopOverlayService()
             DashboardUiEvent.RefreshPermissions -> refreshPermissions()
+            DashboardUiEvent.DismissWhatsNew -> dismissWhatsNew()
         }
+    }
+
+    private fun dismissWhatsNew() {
+        _whatsNewInfo.value = null
+        val currentCode = com.framex.app.BuildConfig.VERSION_CODE.toLong()
+        settingsRepository.updateLastSeenVersionCode(currentCode)
     }
 
     fun refreshPermissions() {

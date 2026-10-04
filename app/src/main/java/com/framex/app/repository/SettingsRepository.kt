@@ -570,6 +570,18 @@ class SettingsRepository @Inject constructor(
         _gamingPlatformPath.value = path
     }
 
+    // ---- Post-Update What's New Tracking ------------------------------------
+
+    private val _lastSeenVersionCode = MutableStateFlow(prefs.getLong(KEY_LAST_SEEN_VERSION_CODE, 0L))
+    val lastSeenVersionCode: StateFlow<Long> = _lastSeenVersionCode.asStateFlow()
+
+    fun getLastSeenVersionCode(): Long = _lastSeenVersionCode.value
+
+    fun updateLastSeenVersionCode(versionCode: Long) {
+        prefs.edit().putLong(KEY_LAST_SEEN_VERSION_CODE, versionCode).apply()
+        _lastSeenVersionCode.value = versionCode
+    }
+
     // ---- Legacy Cleanup Migration --------------------------------------------
 
     fun needsLegacySettingsCleanup(): Boolean =
@@ -582,6 +594,7 @@ class SettingsRepository @Inject constructor(
     }
 
     companion object {
+        private const val KEY_LAST_SEEN_VERSION_CODE = "last_seen_version_code"
         private const val KEY_GAMING_PLATFORM_PATH = "gaming_platform_path"
         private const val KEY_OVERLAY_MODE = "overlay_mode"
         private const val KEY_THERMAL_TIME_WINDOW = "thermal_time_window"

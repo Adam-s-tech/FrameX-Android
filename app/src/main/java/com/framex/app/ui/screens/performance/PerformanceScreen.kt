@@ -25,24 +25,21 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import com.framex.app.gaming.GamingModeEngine
+import com.framex.app.R
 import com.framex.app.gaming.GamingModeState
+import com.framex.app.ui.components.FrameXTopBar
 import com.framex.app.ui.components.DeepFreezeSafeguardDialog
 import com.framex.app.ui.screens.performance.dialogs.AddGameModal
 import com.framex.app.ui.screens.performance.dialogs.DeployingGameModal
 import com.framex.app.ui.screens.performance.dialogs.GameConfigModal
 import com.framex.app.ui.screens.performance.dialogs.RamSuccessBanner
 import com.framex.app.ui.screens.performance.sections.AppWhitelistSection
-import com.framex.app.ui.screens.performance.sections.FixedPerformanceModeCard
 import com.framex.app.ui.screens.performance.sections.GameLauncherSection
 import com.framex.app.ui.screens.performance.sections.GoogleAppsSection
 import com.framex.app.ui.screens.performance.sections.HeroGamingCard
-import com.framex.app.ui.screens.performance.sections.OemPackagesSection
-import com.framex.app.ui.screens.performance.sections.OptimizationSlidersSection
-import com.framex.app.ui.screens.performance.sections.ProtectedDaemonsSection
 import com.framex.app.ui.screens.performance.sections.RequirementsSection
-import com.framex.app.ui.screens.performance.sections.StorageAndPingCard
 import com.framex.app.ui.screens.performance.sections.SystemAuditLogSection
 import com.framex.app.ui.screens.performance.sections.SystemHealthGaugesSection
 import com.framex.app.ui.screens.performance.sections.VivoPerformanceToolsSection
@@ -53,6 +50,10 @@ fun PerformanceScreen(
     onEvent: (PerformanceUiEvent) -> Unit,
     getGameConfigBoostRam: (String) -> Boolean,
     setGameConfigBoostRam: (String, Boolean) -> Unit,
+    onRequestShizuku: () -> Unit,
+    onRequestWriteSettings: () -> Unit,
+    onRequestDndAccess: () -> Unit,
+    onRequestNotificationListener: () -> Unit,
     onNavigateBack: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -93,34 +94,15 @@ fun PerformanceScreen(
                 .navigationBarsPadding()
         ) {
             // Header with statusBarsPadding
-            item {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .statusBarsPadding()
-                        .padding(horizontal = 16.dp, vertical = 12.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    IconButton(onClick = onNavigateBack) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Back",
-                            tint = Color.White
-                        )
-                    }
-                    Spacer(modifier = Modifier.weight(1f))
-                    Text(
-                        text = "Performance",
-                        style = MaterialTheme.typography.titleMedium,
-                        color = Color.White
-                    )
-                    Spacer(modifier = Modifier.weight(1f))
-                    Spacer(modifier = Modifier.width(48.dp))
-                }
+            item(key = "performance_header") {
+                FrameXTopBar(
+                    title = stringResource(R.string.performance_title),
+                    onNavigateBack = onNavigateBack
+                )
             }
 
             // Hero Gaming Mode card
-            item {
+            item(key = "hero_gaming_card") {
                 HeroGamingCard(
                     gamingState = uiState.gamingState,
                     animatedProgress = animatedProgress,
@@ -137,76 +119,52 @@ fun PerformanceScreen(
             }
 
             // Requirements & Status section
-            item {
+            item(key = "requirements_section") {
                 RequirementsSection(
                     shizukuReady = shizukuReady,
                     isShizukuAvailable = uiState.isShizukuAvailable,
                     hasWriteSettingsAccess = uiState.hasWriteSettingsAccess,
                     hasDndAccess = uiState.hasDndAccess,
-                    hasNotifListenerAccess = uiState.hasNotifListenerAccess
+                    hasNotifListenerAccess = uiState.hasNotifListenerAccess,
+                    onRequestShizuku = onRequestShizuku,
+                    onRequestWriteSettings = onRequestWriteSettings,
+                    onRequestDndAccess = onRequestDndAccess,
+                    onRequestNotificationListener = onRequestNotificationListener
                 )
+                Spacer(modifier = Modifier.height(24.dp))
             }
 
             // Dedicated Vivo & iQOO Hardware Suite
             if (uiState.isVivoSuiteEnabled) {
-                item {
+                item(key = "vivo_performance_tools_section") {
                     VivoPerformanceToolsSection(
                         launcherGames = uiState.launcherGames,
                         perfGameList = uiState.vivoPerfGameList,
                         rawPerfGameList = uiState.rawPerfGameList,
                         onRefreshPerfList = { onEvent(PerformanceUiEvent.RefreshVivoPerfList) },
-                        onAddAllToPerfList = { pkgs, _ -> onEvent(PerformanceUiEvent.AddAllToPerfList(pkgs)) },
-                        onRemoveAllFromPerfList = { pkgs, _ -> onEvent(PerformanceUiEvent.RemoveAllFromPerfList(pkgs)) },
-                        onCompileAll = { pkgs, _ -> onEvent(PerformanceUiEvent.CompileAllSpeed(pkgs)) }
+                        onAddAllToPerfList = { pkgs, onComplete -> onEvent(PerformanceUiEvent.AddAllToPerfList(pkgs, onComplete)) },
+                        onRemoveAllFromPerfList = { pkgs, onComplete -> onEvent(PerformanceUiEvent.RemoveAllFromPerfList(pkgs, onComplete)) },
+                        onCompileAll = { pkgs, onComplete -> onEvent(PerformanceUiEvent.CompileAllSpeed(pkgs, onComplete)) }
                     )
                     Spacer(modifier = Modifier.height(24.dp))
                 }
             }
 
             // System Health Gauges
-            item {
+            item(key = "system_health_gauges_section") {
                 SystemHealthGaugesSection(
                     ramPercentage = ramPercentage,
-                    cpuPercentage = uiState.metricsState.cpuPercentage?.toFloat()
-                )
-            }
-
-            // Storage & Ping card
-            item {
-                StorageAndPingCard(
-                    storageInfo = uiState.storageInfo,
-                    currentPing = uiState.activeLatencyDiagnostic ?: uiState.metricsState.pingMs,
-                    isOptimizingNet = uiState.isOptimizingNet
-                )
-                Spacer(modifier = Modifier.height(24.dp))
-            }
-
-            // Optimization sliders
-            item {
-                OptimizationSlidersSection(
-                    isBoostingRam = uiState.isBoostingRam,
-                    showRamResult = uiState.showRamResult,
-                    isOptimizingNet = uiState.isOptimizingNet,
-                    showPingResult = uiState.showPingResult,
-                    isResettingDefaults = uiState.isResettingDefaults,
-                    showResetResult = uiState.showResetResult,
-                    onBoostRam = { onEvent(PerformanceUiEvent.BoostRam) },
-                    onCheckPing = { onEvent(PerformanceUiEvent.CheckPing) },
-                    onResetDefaults = { onEvent(PerformanceUiEvent.ResetDefaults) }
-                )
-            }
-
-            // Fixed Performance Mode Toggle Card
-            item {
-                FixedPerformanceModeCard(
-                    enabled = uiState.fixedPerformanceMode,
-                    onToggle = { onEvent(PerformanceUiEvent.ToggleFixedPerformanceMode(it)) }
+                    cpuPercentage = uiState.metricsState.cpuPercentage?.toFloat(),
+                    ramUsedGb = uiState.metricsState.ramUsedGb,
+                    ramTotalGb = uiState.metricsState.ramTotalGb,
+                    fps = uiState.metricsState.fps,
+                    maxRefreshRate = uiState.maxRefreshRate
                 )
                 Spacer(modifier = Modifier.height(24.dp))
             }
 
             // Game Launcher
-            item {
+            item(key = "game_launcher_section") {
                 GameLauncherSection(
                     launcherGames = uiState.launcherGames,
                     userApps = uiState.userApps,
@@ -214,6 +172,7 @@ fun PerformanceScreen(
                     onGameConfigClicked = { pkg -> onEvent(PerformanceUiEvent.SetConfigGamePkg(pkg)) },
                     onRemoveGame = { pkg -> onEvent(PerformanceUiEvent.ToggleLauncherGame(pkg)) }
                 )
+                Spacer(modifier = Modifier.height(24.dp))
             }
 
             // App Whitelist
@@ -232,19 +191,8 @@ fun PerformanceScreen(
                 onToggleDeepFreeze = { enabled -> onEvent(PerformanceUiEvent.ToggleDeepFreeze(enabled)) }
             )
 
-            // Protected Daemons & OEM Suspended Packages
-            if (uiState.deepFreezeEnabled) {
-                item {
-                    ProtectedDaemonsSection(daemonsList = uiState.gamingDaemonsList)
-                }
-
-                item {
-                    OemPackagesSection(safeToSuspendList = uiState.safeToSuspendList)
-                }
-            }
-
             // System Optimization Audit Console
-            item {
+            item(key = "system_audit_log_section") {
                 SystemAuditLogSection(
                     isLoggingEnabled = uiState.auditLoggingEnabled,
                     onToggleLogging = { onEvent(PerformanceUiEvent.ToggleAuditLogging(it)) },

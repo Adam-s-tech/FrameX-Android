@@ -81,18 +81,31 @@ fun ExecutionCenterSection(
     }
 
     Column(modifier = modifier.fillMaxWidth()) {
-        Text(
-            text = "EXECUTION CENTER",
-            fontSize = 12.sp,
-            fontWeight = FontWeight.SemiBold,
-            color = Color.Gray,
-            letterSpacing = 0.06.sp,
-            modifier = Modifier.padding(start = 4.dp, bottom = 12.dp)
-        )
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 12.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Icon(
+                imageVector = Icons.Default.Terminal,
+                contentDescription = null,
+                tint = Color.White,
+                modifier = Modifier.size(16.dp)
+            )
+            Spacer(modifier = Modifier.width(8.dp))
+            Text(
+                text = "EXECUTION CENTER",
+                style = MaterialTheme.typography.titleSmall,
+                fontWeight = FontWeight.Bold,
+                color = Color.White,
+                letterSpacing = 0.5.sp
+            )
+        }
 
         Card(
             shape = RoundedCornerShape(20.dp),
-            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+            colors = CardDefaults.cardColors(containerColor = Color(0xFF0F1015)),
             border = BorderStroke(1.dp, Color.White.copy(alpha = 0.08f)),
             modifier = Modifier.fillMaxWidth()
         ) {
@@ -163,14 +176,14 @@ private fun ExecutionCenterHeader(
                 modifier = Modifier
                     .size(42.dp)
                     .clip(RoundedCornerShape(12.dp))
-                    .background(Color(0xFFF59E0B).copy(alpha = 0.14f))
-                    .border(1.dp, Color(0xFFF59E0B).copy(alpha = 0.28f), RoundedCornerShape(12.dp)),
+                    .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.15f))
+                    .border(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.35f), RoundedCornerShape(12.dp)),
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
                     imageVector = Icons.Default.Terminal,
                     contentDescription = null,
-                    tint = Color(0xFFFBBF24),
+                    tint = Color.White,
                     modifier = Modifier.size(20.dp)
                 )
             }
@@ -223,7 +236,7 @@ private fun ExecutionTabBar(
                     .weight(1f)
                     .clip(RoundedCornerShape(8.dp))
                     .background(
-                        if (isSelected) Color(0xFF272738)
+                        if (isSelected) MaterialTheme.colorScheme.primary.copy(alpha = 0.30f)
                         else Color.Transparent
                     )
                     .clickable { onSelectTab(tab) }

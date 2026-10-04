@@ -15,9 +15,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.framex.app.R
 import com.framex.app.metrics.MetricsEngine
+import com.framex.app.ui.components.FrameXTopBar
 import com.framex.app.metrics.MetricsState
 import com.framex.app.ui.screens.thermal.components.GraphLegend
 import com.framex.app.ui.screens.thermal.components.ModernInteractiveGraph
@@ -117,21 +120,10 @@ fun ThermalDiagnosticsScreen(
     ) {
         Column(modifier = Modifier.fillMaxSize()) {
             // Header Bar
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .statusBarsPadding()
-                    .padding(horizontal = FrameXSpacing.Standard, vertical = FrameXSpacing.Medium),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                IconButton(onClick = onNavigateBack) {
-                    Icon(Icons.Default.ArrowBackIosNew, contentDescription = "Back", tint = Color.White)
-                }
-                Column {
-                    Text("Thermal Diagnostics", style = MaterialTheme.typography.titleMedium, color = Color.White)
-                    Text("Real-time hardware telemetry & root cause analysis", style = MaterialTheme.typography.bodySmall, color = Color.Gray)
-                }
-            }
+            FrameXTopBar(
+                title = stringResource(R.string.thermal_diagnostics_title),
+                onNavigateBack = onNavigateBack
+            )
 
             Column(
                 modifier = Modifier

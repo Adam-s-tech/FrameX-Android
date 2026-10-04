@@ -87,5 +87,4 @@ sealed interface AboutUiEffect {
     data class ShowToast(val message: String) : AboutUiEffect
     data object OpenUnknownSourcesSettings : AboutUiEffect
     data class OpenBrowser(val url: String) : AboutUiEffect
-    data class ShareLogIntent(val file: File) : AboutUiEffect
 }

@@ -1,24 +1,29 @@
 package com.framex.app.ui.screens.overlay
 
-import androidx.compose.animation.*
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBackIosNew
+import androidx.compose.material.icons.filled.GridView
 import androidx.compose.material.icons.filled.RestartAlt
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.framex.app.R
+import com.framex.app.ui.components.FrameXApplyButton
+import com.framex.app.ui.components.FrameXTopBar
 import com.framex.app.ui.components.ReorderableList
 import com.framex.app.ui.screens.overlay.components.ModeSelector
 import com.framex.app.ui.screens.overlay.components.ModuleRow
@@ -45,44 +50,22 @@ fun OverlayCustomizationScreen(
     ) {
         Column(modifier = Modifier.fillMaxSize()) {
             // Header Bar
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .statusBarsPadding()
-                    .padding(horizontal = 16.dp, vertical = 12.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                IconButton(
-                    onClick = onNavigateBack,
-                    modifier = Modifier.size(48.dp)
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.ArrowBackIosNew,
-                        contentDescription = stringResource(R.string.action_back),
-                        tint = Color.White
-                    )
-                }
-                Spacer(modifier = Modifier.width(8.dp))
-                Text(
-                    text = stringResource(R.string.overlay_config_title),
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.White
-                )
-            }
+            FrameXTopBar(
+                title = stringResource(R.string.overlay_config_title),
+                onNavigateBack = onNavigateBack
+            )
 
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(4.dp))
 
             // Mode Selector
             ModeSelector(
-                modes = OVERLAY_MODES,
                 selectedMode = uiState.selectedMode,
                 accentColor = accentColor,
                 onModeSelected = { onEvent(OverlayCustomizationUiEvent.SelectMode(it)) },
                 modifier = Modifier.padding(horizontal = 24.dp)
             )
 
-            Spacer(modifier = Modifier.height(20.dp))
+            Spacer(modifier = Modifier.height(18.dp))
 
             // Live Preview Card
             OverlayPreviewCard(
@@ -96,42 +79,79 @@ fun OverlayCustomizationScreen(
                 modifier = Modifier.padding(horizontal = 24.dp)
             )
 
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(20.dp))
 
-            // Active Modules Title & Reset Row
-            Row(
+            // Active Modules Title & Outlined Reset Row
+            Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 24.dp),
-                verticalAlignment = Alignment.CenterVertically
+                    .padding(horizontal = 24.dp)
             ) {
-                Column(modifier = Modifier.weight(1f)) {
-                    Text(
-                        text = stringResource(R.string.overlay_active_modules),
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold,
-                        color = Color.White
-                    )
-                    Spacer(modifier = Modifier.height(2.dp))
-                    Text(
-                        text = stringResource(R.string.overlay_reorder_hint),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = Color.Gray
-                    )
-                }
-                IconButton(
-                    onClick = { onEvent(OverlayCustomizationUiEvent.ResetToDefaultOrder) },
-                    modifier = Modifier.size(48.dp)
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Icon(
-                        imageVector = Icons.Default.RestartAlt,
-                        contentDescription = stringResource(R.string.overlay_reset_order_cd),
-                        tint = Color.LightGray
-                    )
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(
+                            imageVector = Icons.Default.GridView,
+                            contentDescription = null,
+                            tint = Color.White,
+                            modifier = Modifier.size(16.dp)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = stringResource(R.string.overlay_active_modules),
+                            style = MaterialTheme.typography.titleSmall,
+                            fontWeight = FontWeight.Bold,
+                            color = Color.White,
+                            letterSpacing = 0.5.sp
+                        )
+                    }
+
+                    // Outlined Reset Button
+                    Box(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(8.dp))
+                            .background(MaterialTheme.colorScheme.surface)
+                            .border(1.dp, Color.White.copy(alpha = 0.15f), RoundedCornerShape(8.dp))
+                            .clickable(
+                                role = Role.Button,
+                                onClick = { onEvent(OverlayCustomizationUiEvent.ResetToDefaultOrder) }
+                            )
+                            .padding(horizontal = 10.dp, vertical = 6.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(
+                                imageVector = Icons.Default.RestartAlt,
+                                contentDescription = stringResource(R.string.overlay_reset_order_cd),
+                                tint = Color.LightGray,
+                                modifier = Modifier.size(14.dp)
+                            )
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text(
+                                text = stringResource(R.string.overlay_reset_btn),
+                                color = Color.White,
+                                style = MaterialTheme.typography.labelSmall,
+                                fontWeight = FontWeight.SemiBold,
+                                fontSize = 11.sp
+                            )
+                        }
+                    }
                 }
+
+                Spacer(modifier = Modifier.height(4.dp))
+
+                Text(
+                    text = stringResource(R.string.overlay_reorder_hint),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = Color(0xFF9E9E9E),
+                    fontSize = 11.sp
+                )
             }
 
-            Spacer(modifier = Modifier.height(14.dp))
+            Spacer(modifier = Modifier.height(12.dp))
 
             // Reorderable list of active modules
             ReorderableList(
@@ -163,7 +183,7 @@ fun OverlayCustomizationScreen(
             }
         }
 
-        // Bottom Action Bar with Animated State
+        // Bottom Sticky Action Bar with Unified Apply Button
         Box(
             modifier = Modifier
                 .align(Alignment.BottomCenter)
@@ -172,38 +192,11 @@ fun OverlayCustomizationScreen(
                 .navigationBarsPadding()
                 .padding(24.dp)
         ) {
-            Button(
-                onClick = { onEvent(OverlayCustomizationUiEvent.SaveSettings) },
-                enabled = uiState.hasChanges,
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = accentColor,
-                    contentColor = Color.White,
-                    disabledContainerColor = MaterialTheme.colorScheme.surfaceVariant,
-                    disabledContentColor = Color.Gray
-                ),
-                shape = CircleShape,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .defaultMinSize(minHeight = 56.dp)
-            ) {
-                AnimatedContent(
-                    targetState = uiState.hasChanges,
-                    transitionSpec = {
-                        fadeIn(tween(200)) togetherWith fadeOut(tween(200))
-                    },
-                    label = "saveBtnAnim"
-                ) { hasChanges ->
-                    Text(
-                        text = if (hasChanges) {
-                            stringResource(R.string.action_apply_changes)
-                        } else {
-                            stringResource(R.string.action_applied)
-                        },
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold
-                    )
-                }
-            }
+            FrameXApplyButton(
+                hasChanges = uiState.hasChanges,
+                accentColor = accentColor,
+                onClick = { onEvent(OverlayCustomizationUiEvent.SaveSettings) }
+            )
         }
     }
 }

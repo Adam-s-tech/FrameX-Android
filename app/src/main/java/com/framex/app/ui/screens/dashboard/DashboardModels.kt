@@ -10,6 +10,12 @@ data class FpsStatsSummary(
     val frametimeMs: Int = 0
 )
 
+enum class OverlayActionState {
+    RUNNING,
+    READY,
+    MISSING_PERMISSIONS
+}
+
 @Immutable
 data class DashboardUiState(
     val isOverlayRunning: Boolean = false,
@@ -17,24 +23,19 @@ data class DashboardUiState(
     val isShizukuAvailable: Boolean = false,
     val hasShizukuPermission: Boolean = false,
     val fpsHistory: List<Int> = emptyList(),
-    val fpsStats: FpsStatsSummary = FpsStatsSummary()
+    val fpsStats: FpsStatsSummary = FpsStatsSummary(),
+    val whatsNewInfo: WhatsNewInfo? = null
 ) {
     val allPermissionsReady: Boolean
         get() = hasOverlayPermission && isShizukuAvailable && hasShizukuPermission
 
     val isShizukuReady: Boolean
         get() = isShizukuAvailable && hasShizukuPermission
-
-    val missingPermissions: List<String>
-        get() = buildList {
-            if (!hasOverlayPermission) add("Overlay permission")
-            if (!isShizukuAvailable) add("Shizuku service")
-            if (!hasShizukuPermission) add("Shizuku permission")
-        }
 }
 
 sealed interface DashboardUiEvent {
-    object StartOverlay : DashboardUiEvent
-    object StopOverlay : DashboardUiEvent
-    object RefreshPermissions : DashboardUiEvent
+    data object StartOverlay : DashboardUiEvent
+    data object StopOverlay : DashboardUiEvent
+    data object RefreshPermissions : DashboardUiEvent
+    data object DismissWhatsNew : DashboardUiEvent
 }
