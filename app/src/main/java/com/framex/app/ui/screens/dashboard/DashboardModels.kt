@@ -23,7 +23,8 @@ data class DashboardUiState(
     val isShizukuAvailable: Boolean = false,
     val hasShizukuPermission: Boolean = false,
     val fpsHistory: List<Int> = emptyList(),
-    val fpsStats: FpsStatsSummary = FpsStatsSummary()
+    val fpsStats: FpsStatsSummary = FpsStatsSummary(),
+    val whatsNewInfo: WhatsNewInfo? = null
 ) {
     val allPermissionsReady: Boolean
         get() = hasOverlayPermission && isShizukuAvailable && hasShizukuPermission
@@ -36,4 +37,5 @@ sealed interface DashboardUiEvent {
     data object StartOverlay : DashboardUiEvent
     data object StopOverlay : DashboardUiEvent
     data object RefreshPermissions : DashboardUiEvent
+    data object DismissWhatsNew : DashboardUiEvent
 }

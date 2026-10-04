@@ -20,7 +20,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.OpenInNew
-import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -45,14 +44,12 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.framex.app.R
 import com.framex.app.ui.screens.about.AboutHeroCache
 
 private const val URL_GITHUB_PROFILE = "https://github.com/MaheshSharan"
-private const val URL_GITHUB_REPO = "https://github.com/MaheshSharan/FrameX-Android"
 private const val URL_BUY_ME_A_COFFEE = "https://buymeacoffee.com/maheshshar3"
 
 private val CardBackground = Color(0xFF0F1015)
@@ -98,8 +95,6 @@ fun CreatorCard(
         ) {
             Column(modifier = Modifier.padding(16.dp)) {
                 CreatorProfileHeader(onOpenUrl = onOpenUrl)
-                Spacer(modifier = Modifier.height(16.dp))
-                CreatorActionRow(onOpenUrl = onOpenUrl)
                 Spacer(modifier = Modifier.height(16.dp))
                 HorizontalDivider(color = Color.White.copy(alpha = 0.06f))
                 Spacer(modifier = Modifier.height(16.dp))
@@ -159,7 +154,10 @@ private fun CreatorProfileHeader(
 
         Spacer(modifier = Modifier.width(14.dp))
 
-        Column(modifier = Modifier.weight(1f)) {
+        Column(
+            modifier = Modifier.weight(1f),
+            verticalArrangement = Arrangement.Center
+        ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
@@ -168,14 +166,15 @@ private fun CreatorProfileHeader(
                     text = "@MaheshSharan",
                     fontSize = 13.5.sp,
                     fontWeight = FontWeight.Medium,
-                    color = Color.White
+                    color = Color.White,
+                    modifier = Modifier.padding(top = 4.dp)
                 )
 
                 Spacer(modifier = Modifier.weight(1f))
 
                 IconButton(
                     onClick = { onOpenUrl(URL_GITHUB_PROFILE) },
-                    modifier = Modifier.size(48.dp)
+                    modifier = Modifier.size(36.dp)
                 ) {
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.OpenInNew,
@@ -186,7 +185,7 @@ private fun CreatorProfileHeader(
                 }
             }
 
-            Spacer(modifier = Modifier.height(2.dp))
+            Spacer(modifier = Modifier.height(1.dp))
 
             Text(
                 text = "Developer & Maintainer of FrameX",
@@ -195,7 +194,7 @@ private fun CreatorProfileHeader(
                 fontWeight = FontWeight.Medium
             )
 
-            Spacer(modifier = Modifier.height(2.dp))
+            Spacer(modifier = Modifier.height(3.dp))
 
             Text(
                 text = "Follow on GitHub for updates, new features and to support the project.",
@@ -204,83 +203,6 @@ private fun CreatorProfileHeader(
                 lineHeight = 15.sp
             )
         }
-    }
-}
-
-@Composable
-private fun CreatorActionRow(
-    onOpenUrl: (String) -> Unit,
-    modifier: Modifier = Modifier
-) {
-    Row(
-        modifier = modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(8.dp)
-    ) {
-        CreatorActionButton(
-            iconRes = R.drawable.ic_github,
-            label = "GitHub Profile",
-            onClick = { onOpenUrl(URL_GITHUB_PROFILE) },
-            modifier = Modifier.weight(1f)
-        )
-
-        CreatorActionButton(
-            iconRes = R.drawable.ic_repo,
-            label = "FrameX Repo",
-            onClick = { onOpenUrl(URL_GITHUB_REPO) },
-            modifier = Modifier.weight(1f)
-        )
-
-        CreatorActionButton(
-            iconRes = R.drawable.ic_coffee,
-            label = "Buy me a coffee",
-            onClick = { onOpenUrl(URL_BUY_ME_A_COFFEE) },
-            modifier = Modifier.weight(1.15f)
-        )
-    }
-}
-
-@Composable
-private fun CreatorActionButton(
-    iconRes: Int,
-    label: String,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    Row(
-        modifier = modifier
-            .height(38.dp)
-            .clip(RoundedCornerShape(12.dp))
-            .background(Color(0xFF14151B))
-            .border(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.35f), RoundedCornerShape(12.dp))
-            .clickable(onClick = onClick)
-            .padding(horizontal = 7.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceBetween
-    ) {
-        Icon(
-            painter = painterResource(id = iconRes),
-            contentDescription = null,
-            tint = Color.White,
-            modifier = Modifier.size(14.dp)
-        )
-
-        Spacer(modifier = Modifier.width(3.dp))
-
-        Text(
-            text = label,
-            fontSize = 10.5.sp,
-            fontWeight = FontWeight.SemiBold,
-            color = Color.White,
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis
-        )
-
-        Icon(
-            imageVector = Icons.Default.ChevronRight,
-            contentDescription = null,
-            tint = Color.White.copy(alpha = 0.40f),
-            modifier = Modifier.size(12.dp)
-        )
     }
 }
 

@@ -8,6 +8,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.blur
 import androidx.compose.ui.unit.dp
 import com.framex.app.ui.screens.dashboard.components.DashboardHeader
 import com.framex.app.ui.screens.dashboard.components.HeroStatusCard
@@ -15,6 +16,7 @@ import com.framex.app.ui.screens.dashboard.components.LiveFpsSparklineCard
 import com.framex.app.ui.screens.dashboard.components.QuickAccessGrid
 import com.framex.app.ui.screens.dashboard.components.RecentSessionsSection
 import com.framex.app.ui.screens.dashboard.components.ToolsSection
+import com.framex.app.ui.screens.dashboard.components.WhatsNewDialog
 
 /**
  * Pure, stateless screen for Dashboard telemetry and navigation.
@@ -39,9 +41,12 @@ fun DashboardScreen(
         contentVisible = true
     }
 
+    val isWhatsNewVisible = uiState.whatsNewInfo != null
+
     Column(
         modifier = modifier
             .fillMaxSize()
+            .then(if (isWhatsNewVisible) Modifier.blur(10.dp) else Modifier)
             .background(MaterialTheme.colorScheme.background)
     ) {
         // App Header: Untouched per task specification
@@ -101,6 +106,14 @@ fun DashboardScreen(
                     RecentSessionsSection()
                 }
             }
+        }
+
+        // Post-Update What's New Dialog
+        uiState.whatsNewInfo?.let { info ->
+            WhatsNewDialog(
+                info = info,
+                onDismiss = { onEvent(DashboardUiEvent.DismissWhatsNew) }
+            )
         }
     }
 }
