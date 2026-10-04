@@ -3,12 +3,14 @@ package com.framex.app.ui.screens.dashboard.components
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.OpenInNew
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -35,7 +37,8 @@ private val ModalBackground = Color(0xFF0F1015)
 fun WhatsNewDialog(
     info: WhatsNewInfo,
     onDismiss: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onActionClick: ((String) -> Unit)? = null
 ) {
     Dialog(
         onDismissRequest = onDismiss,
@@ -166,7 +169,10 @@ fun WhatsNewDialog(
                             verticalArrangement = Arrangement.spacedBy(10.dp)
                         ) {
                             items(info.items, key = { it.id }) { item ->
-                                WhatsNewItemCard(item = item)
+                                WhatsNewItemCard(
+                                    item = item,
+                                    onActionClick = onActionClick
+                                )
                             }
                         }
 
@@ -200,42 +206,55 @@ fun WhatsNewDialog(
 @Composable
 private fun WhatsNewItemCard(
     item: WhatsNewFeatureItem,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onActionClick: ((String) -> Unit)? = null
 ) {
-    Row(
+    val itemActionId = item.actionId
+    val isActionable = itemActionId != null && onActionClick != null
+
+    Box(
         modifier = modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(16.dp))
-            .background(Color(0xFF14151B))
-            .border(1.dp, Color.White.copy(alpha = 0.06f), RoundedCornerShape(16.dp))
-            .padding(14.dp),
-        verticalAlignment = Alignment.CenterVertically
+            .padding(top = if (item.isNewBadge) 6.dp else 0.dp)
     ) {
-        // Icon Container
-        Box(
+        Row(
             modifier = Modifier
-                .size(42.dp)
-                .clip(RoundedCornerShape(12.dp))
-                .background(Color.White.copy(alpha = 0.05f))
-                .border(1.dp, Color.White.copy(alpha = 0.08f), RoundedCornerShape(12.dp)),
-            contentAlignment = Alignment.Center
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(16.dp))
+                .background(Color(0xFF14151B))
+                .border(
+                    1.dp,
+                    Color.White.copy(alpha = 0.08f),
+                    RoundedCornerShape(16.dp)
+                )
+                .then(
+                    if (isActionable && itemActionId != null) {
+                        Modifier.clickable { onActionClick?.invoke(itemActionId) }
+                    } else Modifier
+                )
+                .padding(14.dp),
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            Icon(
-                imageVector = item.customIcon ?: resolveCategoryIcon(item.category),
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.size(20.dp)
-            )
-        }
-
-        Spacer(modifier = Modifier.width(14.dp))
-
-        Column(modifier = Modifier.weight(1f)) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween,
-                modifier = Modifier.fillMaxWidth()
+            // Icon Container with white icon
+            Box(
+                modifier = Modifier
+                    .size(40.dp)
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(Color.White.copy(alpha = 0.06f))
+                    .border(1.dp, Color.White.copy(alpha = 0.10f), RoundedCornerShape(12.dp)),
+                contentAlignment = Alignment.Center
             ) {
+                Icon(
+                    imageVector = item.customIcon ?: resolveCategoryIcon(item.category),
+                    contentDescription = null,
+                    tint = Color.White,
+                    modifier = Modifier.size(20.dp)
+                )
+            }
+
+            Spacer(modifier = Modifier.width(14.dp))
+
+            Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = item.title,
                     fontSize = 13.5.sp,
@@ -243,30 +262,57 @@ private fun WhatsNewItemCard(
                     color = Color.White
                 )
 
-                if (item.isNewBadge) {
-                    Surface(
-                        shape = CircleShape,
-                        color = MaterialTheme.colorScheme.primary
+                Spacer(modifier = Modifier.height(2.dp))
+
+                Text(
+                    text = item.description,
+                    fontSize = 11.5.sp,
+                    color = Color.White.copy(alpha = 0.65f),
+                    lineHeight = 15.sp
+                )
+
+                if (isActionable) {
+                    Spacer(modifier = Modifier.height(6.dp))
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(4.dp)
                     ) {
                         Text(
-                            text = "NEW",
-                            color = Color.White,
-                            fontSize = 9.5.sp,
-                            fontWeight = FontWeight.Bold,
-                            modifier = Modifier.padding(horizontal = 7.dp, vertical = 2.dp)
+                            text = "Open in Execution Center",
+                            fontSize = 11.5.sp,
+                            fontWeight = FontWeight.SemiBold,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.OpenInNew,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(13.dp)
                         )
                     }
                 }
             }
+        }
 
-            Spacer(modifier = Modifier.height(2.dp))
-
-            Text(
-                text = item.description,
-                fontSize = 11.5.sp,
-                color = Color.White.copy(alpha = 0.65f),
-                lineHeight = 15.sp
-            )
+        // Pill badge mounted on top border line
+        if (item.isNewBadge) {
+            Surface(
+                shape = RoundedCornerShape(6.dp),
+                color = MaterialTheme.colorScheme.primary,
+                border = BorderStroke(1.dp, ModalBackground),
+                modifier = Modifier
+                    .align(Alignment.TopEnd)
+                    .offset(x = (-16).dp, y = (-6).dp)
+            ) {
+                Text(
+                    text = "NEW",
+                    color = Color.White,
+                    fontSize = 8.5.sp,
+                    fontWeight = FontWeight.ExtraBold,
+                    letterSpacing = 0.5.sp,
+                    modifier = Modifier.padding(horizontal = 6.dp, vertical = 1.5.dp)
+                )
+            }
         }
     }
 }

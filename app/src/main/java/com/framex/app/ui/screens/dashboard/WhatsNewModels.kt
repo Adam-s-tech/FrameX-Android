@@ -19,7 +19,8 @@ data class WhatsNewFeatureItem(
     val title: String,
     val description: String,
     val isNewBadge: Boolean = false,
-    val customIcon: ImageVector? = null
+    val customIcon: ImageVector? = null,
+    val actionId: String? = null
 )
 
 @Immutable

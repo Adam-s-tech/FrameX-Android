@@ -1,6 +1,11 @@
 package com.framex.app.ui.screens.dashboard
 
 import com.framex.app.BuildConfig
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Memory
+import androidx.compose.material.icons.filled.OpenWith
+import androidx.compose.material.icons.filled.Speed
+import androidx.compose.material.icons.filled.Terminal
 
 object WhatsNewRegistry {
 
@@ -8,7 +13,7 @@ object WhatsNewRegistry {
      * Debug testing flag. When true, forces the What's New modal to appear on every dashboard load.
      * Switch to false for release production behavior.
      */
-    const val DEBUG_FORCE_SHOW_WHATS_NEW = true
+    const val DEBUG_FORCE_SHOW_WHATS_NEW = false
 
     /**
      * Resolves the list of What's New items to display.
@@ -18,42 +23,37 @@ object WhatsNewRegistry {
         val currentVersionCode = BuildConfig.VERSION_CODE.toLong()
         if (!DEBUG_FORCE_SHOW_WHATS_NEW && versionCode != currentVersionCode) return null
 
-        val items = mutableListOf<WhatsNewFeatureItem>()
-
-        items.add(
+        val items = listOf(
             WhatsNewFeatureItem(
-                id = "live_metrics",
-                category = UpdateItemCategory.LIVE_METRICS,
-                title = "Live Metrics Improvements",
-                description = "More stable FPS, CPU, GPU and RAM monitoring with improved accuracy.",
-                isNewBadge = true
-            )
-        )
-
-        items.add(
-            WhatsNewFeatureItem(
-                id = "game_mode",
+                id = "execution_center",
                 category = UpdateItemCategory.GAME_MODE,
-                title = "Game Mode Enhancements",
-                description = "Faster profile switching and better app detection for smoother performance."
-            )
-        )
-
-        items.add(
+                title = "Execution Center",
+                description = "We moved all gaming mode commands into the Execution Center in About & Legal. Tap Execution Center to view and customize them directly.",
+                isNewBadge = true,
+                actionId = "execution_center",
+                customIcon = Icons.Default.Terminal
+            ),
             WhatsNewFeatureItem(
-                id = "ui_theme",
-                category = UpdateItemCategory.UI_THEME,
-                title = "UI & Theme Updates",
-                description = "Refined design, smoother animations and new customization options."
-            )
-        )
-
-        items.add(
+                id = "faster_gaming_mode",
+                category = UpdateItemCategory.HARDWARE,
+                title = "Faster Game Mode & Restoration",
+                description = "Optimized background command execution and system restoration to apply and turn off settings much faster.",
+                isNewBadge = true,
+                customIcon = Icons.Default.Speed
+            ),
             WhatsNewFeatureItem(
-                id = "bug_fixes",
+                id = "overlay_drag_jitter_fix",
                 category = UpdateItemCategory.BUG_FIXES,
-                title = "Bug Fixes",
-                description = "General stability improvements and several minor bug fixes."
+                title = "Overlay Drag & Screen Bounds",
+                description = "Fixed dragging jitter on the floating overlay and corrected screen edge snapping when rotating the device.",
+                customIcon = Icons.Default.OpenWith
+            ),
+            WhatsNewFeatureItem(
+                id = "stability_and_memory_fixes",
+                category = UpdateItemCategory.BUG_FIXES,
+                title = "Stability & Memory Improvements",
+                description = "Resolved background freezes, smoothed out scrolling lists, and eliminated disk lag to keep the app light and responsive.",
+                customIcon = Icons.Default.Memory
             )
         )
 

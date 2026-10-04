@@ -330,12 +330,21 @@ class AboutViewModel @Inject constructor(
             }
             AboutUiEvent.CancelOrResetDownload -> updateRepository.resetDownloadState()
             AboutUiEvent.HandleSignatureMismatchUninstall -> handleSignatureMismatch()
-            AboutUiEvent.OnResumeCheckInstallPermission -> checkPendingInstallOnResume()
+            AboutUiEvent.OnResumeCheckInstallPermission -> {
+                checkPendingInstallOnResume()
+                checkCrashLog()
+            }
             AboutUiEvent.ShareCrashLog -> crashLogRepository.shareCrashLog()
             AboutUiEvent.ClearCrashLog -> {
                 crashLogRepository.clearCrashLog()
                 _hasCrashLog.value = false
             }
+        }
+    }
+
+    fun checkCrashLog() {
+        viewModelScope.launch(Dispatchers.IO) {
+            _hasCrashLog.value = crashLogRepository.hasCrashLog()
         }
     }
 

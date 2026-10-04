@@ -112,7 +112,13 @@ fun DashboardScreen(
         uiState.whatsNewInfo?.let { info ->
             WhatsNewDialog(
                 info = info,
-                onDismiss = { onEvent(DashboardUiEvent.DismissWhatsNew) }
+                onDismiss = { onEvent(DashboardUiEvent.DismissWhatsNew) },
+                onActionClick = { actionId ->
+                    if (actionId == "execution_center") {
+                        onEvent(DashboardUiEvent.DismissWhatsNew)
+                        onNavigateToAbout()
+                    }
+                }
             )
         }
     }
